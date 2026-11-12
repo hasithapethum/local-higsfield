@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+h3studio/uploads/
+h3studio/jobs.json

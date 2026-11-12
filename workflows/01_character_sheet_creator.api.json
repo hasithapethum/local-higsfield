@@ -1,0 +1,687 @@
+{
+ "1": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "character.png"
+  },
+  "_meta": {
+   "title": "\u2460 character photo"
+  }
+ },
+ "2": {
+  "class_type": "ImageScaleToTotalPixels",
+  "inputs": {
+   "image": [
+    "1",
+    0
+   ],
+   "upscale_method": "lanczos",
+   "megapixels": 1.0,
+   "resolution_steps": 16
+  },
+  "_meta": {
+   "title": "ref -> ~1 MP"
+  }
+ },
+ "3": {
+  "class_type": "UNETLoader",
+  "inputs": {
+   "unet_name": "qwen_image_edit_2511_bf16.safetensors",
+   "weight_dtype": "default"
+  },
+  "_meta": {
+   "title": "Qwen-Image-Edit 2511"
+  }
+ },
+ "4": {
+  "class_type": "CLIPLoader",
+  "inputs": {
+   "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+   "type": "qwen_image",
+   "device": "default"
+  },
+  "_meta": {
+   "title": "Qwen2.5-VL 7B (fp8)"
+  }
+ },
+ "5": {
+  "class_type": "VAELoader",
+  "inputs": {
+   "vae_name": "qwen_image_vae.safetensors"
+  },
+  "_meta": {
+   "title": "Qwen-Image VAE"
+  }
+ },
+ "6": {
+  "class_type": "LoraLoaderModelOnly",
+  "inputs": {
+   "model": [
+    "3",
+    0
+   ],
+   "lora_name": "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+   "strength_model": 1.0
+  },
+  "_meta": {
+   "title": "Lightning 4-step LoRA"
+  }
+ },
+ "7": {
+  "class_type": "ModelSamplingAuraFlow",
+  "inputs": {
+   "model": [
+    "6",
+    0
+   ],
+   "shift": 3.1
+  }
+ },
+ "8": {
+  "class_type": "CFGNorm",
+  "inputs": {
+   "model": [
+    "7",
+    0
+   ],
+   "strength": 1.0
+  }
+ },
+ "9": {
+  "class_type": "TextEncodeQwenImageEditPlus",
+  "inputs": {
+   "clip": [
+    "4",
+    0
+   ],
+   "prompt": "Redraw the exact same person from the reference image as a full-body front view, standing straight, facing the camera, arms relaxed at the sides, neutral expression. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark.",
+   "vae": [
+    "5",
+    0
+   ],
+   "image1": [
+    "2",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "prompt: front"
+  }
+ },
+ "10": {
+  "class_type": "ConditioningZeroOut",
+  "inputs": {
+   "conditioning": [
+    "9",
+    0
+   ]
+  }
+ },
+ "11": {
+  "class_type": "EmptySD3LatentImage",
+  "inputs": {
+   "width": 832,
+   "height": 1248,
+   "batch_size": 1
+  }
+ },
+ "12": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "8",
+    0
+   ],
+   "seed": 42,
+   "steps": 4,
+   "cfg": 1.0,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "positive": [
+    "9",
+    0
+   ],
+   "negative": [
+    "10",
+    0
+   ],
+   "latent_image": [
+    "11",
+    0
+   ],
+   "denoise": 1.0
+  },
+  "_meta": {
+   "title": "sample: front"
+  }
+ },
+ "13": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "12",
+    0
+   ],
+   "vae": [
+    "5",
+    0
+   ]
+  }
+ },
+ "14": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "13",
+    0
+   ],
+   "filename_prefix": "H3Studio/charsheet_front"
+  },
+  "_meta": {
+   "title": "save front"
+  }
+ },
+ "15": {
+  "class_type": "ImageScaleToTotalPixels",
+  "inputs": {
+   "image": [
+    "13",
+    0
+   ],
+   "upscale_method": "lanczos",
+   "megapixels": 1.0,
+   "resolution_steps": 16
+  },
+  "_meta": {
+   "title": "anchor ~1MP"
+  }
+ },
+ "16": {
+  "class_type": "TextEncodeQwenImageEditPlus",
+  "inputs": {
+   "clip": [
+    "4",
+    0
+   ],
+   "prompt": "Redraw the exact same person from the reference image as a full-body three-quarter view (body turned 45 degrees to the left), standing, neutral expression. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both.",
+   "vae": [
+    "5",
+    0
+   ],
+   "image1": [
+    "15",
+    0
+   ],
+   "image2": [
+    "2",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "prompt: three_quarter"
+  }
+ },
+ "17": {
+  "class_type": "ConditioningZeroOut",
+  "inputs": {
+   "conditioning": [
+    "16",
+    0
+   ]
+  }
+ },
+ "18": {
+  "class_type": "EmptySD3LatentImage",
+  "inputs": {
+   "width": 832,
+   "height": 1248,
+   "batch_size": 1
+  }
+ },
+ "19": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "8",
+    0
+   ],
+   "seed": 42,
+   "steps": 4,
+   "cfg": 1.0,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "positive": [
+    "16",
+    0
+   ],
+   "negative": [
+    "17",
+    0
+   ],
+   "latent_image": [
+    "18",
+    0
+   ],
+   "denoise": 1.0
+  },
+  "_meta": {
+   "title": "sample: three_quarter"
+  }
+ },
+ "20": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "19",
+    0
+   ],
+   "vae": [
+    "5",
+    0
+   ]
+  }
+ },
+ "21": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "20",
+    0
+   ],
+   "filename_prefix": "H3Studio/charsheet_three_quarter"
+  },
+  "_meta": {
+   "title": "save three_quarter"
+  }
+ },
+ "22": {
+  "class_type": "TextEncodeQwenImageEditPlus",
+  "inputs": {
+   "clip": [
+    "4",
+    0
+   ],
+   "prompt": "Redraw the exact same person from the reference image as a full-body side profile view facing left (90 degrees), standing straight, arms relaxed. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both.",
+   "vae": [
+    "5",
+    0
+   ],
+   "image1": [
+    "15",
+    0
+   ],
+   "image2": [
+    "2",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "prompt: side"
+  }
+ },
+ "23": {
+  "class_type": "ConditioningZeroOut",
+  "inputs": {
+   "conditioning": [
+    "22",
+    0
+   ]
+  }
+ },
+ "24": {
+  "class_type": "EmptySD3LatentImage",
+  "inputs": {
+   "width": 832,
+   "height": 1248,
+   "batch_size": 1
+  }
+ },
+ "25": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "8",
+    0
+   ],
+   "seed": 42,
+   "steps": 4,
+   "cfg": 1.0,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "positive": [
+    "22",
+    0
+   ],
+   "negative": [
+    "23",
+    0
+   ],
+   "latent_image": [
+    "24",
+    0
+   ],
+   "denoise": 1.0
+  },
+  "_meta": {
+   "title": "sample: side"
+  }
+ },
+ "26": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "25",
+    0
+   ],
+   "vae": [
+    "5",
+    0
+   ]
+  }
+ },
+ "27": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "26",
+    0
+   ],
+   "filename_prefix": "H3Studio/charsheet_side"
+  },
+  "_meta": {
+   "title": "save side"
+  }
+ },
+ "28": {
+  "class_type": "TextEncodeQwenImageEditPlus",
+  "inputs": {
+   "clip": [
+    "4",
+    0
+   ],
+   "prompt": "Redraw the exact same person from the reference image as a full-body rear view, seen from directly behind, standing straight, arms relaxed at the sides. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both.",
+   "vae": [
+    "5",
+    0
+   ],
+   "image1": [
+    "15",
+    0
+   ],
+   "image2": [
+    "2",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "prompt: back"
+  }
+ },
+ "29": {
+  "class_type": "ConditioningZeroOut",
+  "inputs": {
+   "conditioning": [
+    "28",
+    0
+   ]
+  }
+ },
+ "30": {
+  "class_type": "EmptySD3LatentImage",
+  "inputs": {
+   "width": 832,
+   "height": 1248,
+   "batch_size": 1
+  }
+ },
+ "31": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "8",
+    0
+   ],
+   "seed": 42,
+   "steps": 4,
+   "cfg": 1.0,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "positive": [
+    "28",
+    0
+   ],
+   "negative": [
+    "29",
+    0
+   ],
+   "latent_image": [
+    "30",
+    0
+   ],
+   "denoise": 1.0
+  },
+  "_meta": {
+   "title": "sample: back"
+  }
+ },
+ "32": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "31",
+    0
+   ],
+   "vae": [
+    "5",
+    0
+   ]
+  }
+ },
+ "33": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "32",
+    0
+   ],
+   "filename_prefix": "H3Studio/charsheet_back"
+  },
+  "_meta": {
+   "title": "save back"
+  }
+ },
+ "34": {
+  "class_type": "TextEncodeQwenImageEditPlus",
+  "inputs": {
+   "clip": [
+    "4",
+    0
+   ],
+   "prompt": "Redraw the exact same person from the reference image as a sharp head-and-shoulders face close-up portrait, facing the camera, neutral expression, even soft lighting. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both.",
+   "vae": [
+    "5",
+    0
+   ],
+   "image1": [
+    "15",
+    0
+   ],
+   "image2": [
+    "2",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "prompt: face"
+  }
+ },
+ "35": {
+  "class_type": "ConditioningZeroOut",
+  "inputs": {
+   "conditioning": [
+    "34",
+    0
+   ]
+  }
+ },
+ "36": {
+  "class_type": "EmptySD3LatentImage",
+  "inputs": {
+   "width": 1024,
+   "height": 1024,
+   "batch_size": 1
+  }
+ },
+ "37": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "8",
+    0
+   ],
+   "seed": 42,
+   "steps": 4,
+   "cfg": 1.0,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "positive": [
+    "34",
+    0
+   ],
+   "negative": [
+    "35",
+    0
+   ],
+   "latent_image": [
+    "36",
+    0
+   ],
+   "denoise": 1.0
+  },
+  "_meta": {
+   "title": "sample: face"
+  }
+ },
+ "38": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "37",
+    0
+   ],
+   "vae": [
+    "5",
+    0
+   ]
+  }
+ },
+ "39": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "38",
+    0
+   ],
+   "filename_prefix": "H3Studio/charsheet_face"
+  },
+  "_meta": {
+   "title": "save face"
+  }
+ },
+ "40": {
+  "class_type": "ImageStitch",
+  "inputs": {
+   "image1": [
+    "13",
+    0
+   ],
+   "direction": "right",
+   "match_image_size": true,
+   "spacing_width": 0,
+   "spacing_color": "white",
+   "image2": [
+    "20",
+    0
+   ]
+  }
+ },
+ "41": {
+  "class_type": "ImageStitch",
+  "inputs": {
+   "image1": [
+    "40",
+    0
+   ],
+   "direction": "right",
+   "match_image_size": true,
+   "spacing_width": 0,
+   "spacing_color": "white",
+   "image2": [
+    "26",
+    0
+   ]
+  }
+ },
+ "42": {
+  "class_type": "ImageStitch",
+  "inputs": {
+   "image1": [
+    "41",
+    0
+   ],
+   "direction": "right",
+   "match_image_size": true,
+   "spacing_width": 0,
+   "spacing_color": "white",
+   "image2": [
+    "32",
+    0
+   ]
+  }
+ },
+ "43": {
+  "class_type": "ImageStitch",
+  "inputs": {
+   "image1": [
+    "42",
+    0
+   ],
+   "direction": "right",
+   "match_image_size": true,
+   "spacing_width": 0,
+   "spacing_color": "white",
+   "image2": [
+    "38",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "sheet = bodies | face"
+  }
+ },
+ "44": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "43",
+    0
+   ],
+   "filename_prefix": "H3Studio/charsheet_SHEET"
+  },
+  "_meta": {
+   "title": "\u2605 CHARACTER SHEET"
+  }
+ },
+ "45": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "43",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "preview"
+  }
+ }
+}

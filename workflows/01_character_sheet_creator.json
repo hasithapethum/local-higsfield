@@ -1,0 +1,2645 @@
+{
+ "id": "h3studio-9be18007",
+ "revision": 0,
+ "last_node_id": 10045,
+ "last_link_id": 74,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "LoadImage",
+   "pos": [
+    40,
+    80
+   ],
+   "size": [
+    340,
+    146
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      1
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "character.png"
+   ],
+   "title": "\u2460 character photo",
+   "color": "#323",
+   "bgcolor": "#535"
+  },
+  {
+   "id": 2,
+   "type": "ImageScaleToTotalPixels",
+   "pos": [
+    430,
+    80
+   ],
+   "size": [
+    340,
+    168
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 1
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      7,
+      20,
+      32,
+      44,
+      56
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageScaleToTotalPixels"
+   },
+   "widgets_values": [
+    "lanczos",
+    1.0,
+    16
+   ],
+   "title": "ref -> ~1 MP"
+  },
+  {
+   "id": 3,
+   "type": "UNETLoader",
+   "pos": [
+    40,
+    266
+   ],
+   "size": [
+    340,
+    144
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      2
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "UNETLoader"
+   },
+   "widgets_values": [
+    "qwen_image_edit_2511_bf16.safetensors",
+    "default"
+   ],
+   "title": "Qwen-Image-Edit 2511"
+  },
+  {
+   "id": 4,
+   "type": "CLIPLoader",
+   "pos": [
+    40,
+    450
+   ],
+   "size": [
+    340,
+    168
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [
+      5,
+      17,
+      29,
+      41,
+      53
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPLoader"
+   },
+   "widgets_values": [
+    "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+    "qwen_image",
+    "default"
+   ],
+   "title": "Qwen2.5-VL 7B (fp8)"
+  },
+  {
+   "id": 5,
+   "type": "VAELoader",
+   "pos": [
+    40,
+    658
+   ],
+   "size": [
+    340,
+    120
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      6,
+      14,
+      18,
+      27,
+      30,
+      39,
+      42,
+      51,
+      54,
+      63
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAELoader"
+   },
+   "widgets_values": [
+    "qwen_image_vae.safetensors"
+   ],
+   "title": "Qwen-Image VAE"
+  },
+  {
+   "id": 6,
+   "type": "LoraLoaderModelOnly",
+   "pos": [
+    430,
+    288
+   ],
+   "size": [
+    340,
+    144
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 2
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      3
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoraLoaderModelOnly"
+   },
+   "widgets_values": [
+    "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+    1.0
+   ],
+   "title": "Lightning 4-step LoRA"
+  },
+  {
+   "id": 7,
+   "type": "ModelSamplingAuraFlow",
+   "pos": [
+    820,
+    80
+   ],
+   "size": [
+    340,
+    144
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 3
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      4
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ModelSamplingAuraFlow"
+   },
+   "widgets_values": [
+    3.1,
+    "flow"
+   ]
+  },
+  {
+   "id": 8,
+   "type": "CFGNorm",
+   "pos": [
+    1210,
+    80
+   ],
+   "size": [
+    340,
+    144
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 4
+    }
+   ],
+   "outputs": [
+    {
+     "name": "patched_model",
+     "type": "MODEL",
+     "links": [
+      9,
+      22,
+      34,
+      46,
+      58
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CFGNorm"
+   },
+   "widgets_values": [
+    1.0,
+    false
+   ]
+  },
+  {
+   "id": 9,
+   "type": "TextEncodeQwenImageEditPlus",
+   "pos": [
+    40,
+    1038
+   ],
+   "size": [
+    340,
+    224
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 5
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 6,
+     "shape": 7
+    },
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 7,
+     "shape": 7
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": null,
+     "shape": 7
+    },
+    {
+     "name": "image3",
+     "type": "IMAGE",
+     "link": null,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      8,
+      10
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "TextEncodeQwenImageEditPlus"
+   },
+   "widgets_values": [
+    "Redraw the exact same person from the reference image as a full-body front view, standing straight, facing the camera, arms relaxed at the sides, neutral expression. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark."
+   ],
+   "title": "prompt: front"
+  },
+  {
+   "id": 10,
+   "type": "ConditioningZeroOut",
+   "pos": [
+    430,
+    1038
+   ],
+   "size": [
+    340,
+    96
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 8
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      11
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ConditioningZeroOut"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 11,
+   "type": "EmptySD3LatentImage",
+   "pos": [
+    40,
+    1302
+   ],
+   "size": [
+    340,
+    168
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      12
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "EmptySD3LatentImage"
+   },
+   "widgets_values": [
+    832,
+    1248,
+    1
+   ]
+  },
+  {
+   "id": 12,
+   "type": "KSampler",
+   "pos": [
+    820,
+    1038
+   ],
+   "size": [
+    340,
+    342
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 9
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 10
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 11
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 12
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      13
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    42,
+    "fixed",
+    4,
+    1.0,
+    "euler",
+    "simple",
+    1.0
+   ],
+   "title": "sample: front"
+  },
+  {
+   "id": 13,
+   "type": "VAEDecode",
+   "pos": [
+    1210,
+    1038
+   ],
+   "size": [
+    340,
+    122
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 13
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 14
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      15,
+      16,
+      65
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 14,
+   "type": "SaveImage",
+   "pos": [
+    1600,
+    1038
+   ],
+   "size": [
+    340,
+    120
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 15
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SaveImage"
+   },
+   "widgets_values": [
+    "H3Studio/charsheet_front"
+   ],
+   "title": "save front"
+  },
+  {
+   "id": 15,
+   "type": "ImageScaleToTotalPixels",
+   "pos": [
+    1600,
+    1198
+   ],
+   "size": [
+    340,
+    168
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 16
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      19,
+      31,
+      43,
+      55
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageScaleToTotalPixels"
+   },
+   "widgets_values": [
+    "lanczos",
+    1.0,
+    16
+   ],
+   "title": "anchor ~1MP"
+  },
+  {
+   "id": 16,
+   "type": "TextEncodeQwenImageEditPlus",
+   "pos": [
+    1990,
+    1038
+   ],
+   "size": [
+    340,
+    224
+   ],
+   "flags": {},
+   "order": 16,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 17
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 18,
+     "shape": 7
+    },
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 19,
+     "shape": 7
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": 20,
+     "shape": 7
+    },
+    {
+     "name": "image3",
+     "type": "IMAGE",
+     "link": null,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      21,
+      23
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "TextEncodeQwenImageEditPlus"
+   },
+   "widgets_values": [
+    "Redraw the exact same person from the reference image as a full-body three-quarter view (body turned 45 degrees to the left), standing, neutral expression. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both."
+   ],
+   "title": "prompt: three_quarter"
+  },
+  {
+   "id": 17,
+   "type": "ConditioningZeroOut",
+   "pos": [
+    2380,
+    1038
+   ],
+   "size": [
+    340,
+    96
+   ],
+   "flags": {},
+   "order": 17,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 21
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      24
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ConditioningZeroOut"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 18,
+   "type": "EmptySD3LatentImage",
+   "pos": [
+    40,
+    1510
+   ],
+   "size": [
+    340,
+    168
+   ],
+   "flags": {},
+   "order": 18,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      25
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "EmptySD3LatentImage"
+   },
+   "widgets_values": [
+    832,
+    1248,
+    1
+   ]
+  },
+  {
+   "id": 19,
+   "type": "KSampler",
+   "pos": [
+    2770,
+    1038
+   ],
+   "size": [
+    340,
+    342
+   ],
+   "flags": {},
+   "order": 19,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 22
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 23
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 24
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 25
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      26
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    42,
+    "fixed",
+    4,
+    1.0,
+    "euler",
+    "simple",
+    1.0
+   ],
+   "title": "sample: three_quarter"
+  },
+  {
+   "id": 20,
+   "type": "VAEDecode",
+   "pos": [
+    3160,
+    1038
+   ],
+   "size": [
+    340,
+    122
+   ],
+   "flags": {},
+   "order": 20,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 26
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 27
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      28,
+      66
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 21,
+   "type": "SaveImage",
+   "pos": [
+    3550,
+    1038
+   ],
+   "size": [
+    340,
+    120
+   ],
+   "flags": {},
+   "order": 21,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 28
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SaveImage"
+   },
+   "widgets_values": [
+    "H3Studio/charsheet_three_quarter"
+   ],
+   "title": "save three_quarter"
+  },
+  {
+   "id": 22,
+   "type": "TextEncodeQwenImageEditPlus",
+   "pos": [
+    1990,
+    1302
+   ],
+   "size": [
+    340,
+    224
+   ],
+   "flags": {},
+   "order": 22,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 29
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 30,
+     "shape": 7
+    },
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 31,
+     "shape": 7
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": 32,
+     "shape": 7
+    },
+    {
+     "name": "image3",
+     "type": "IMAGE",
+     "link": null,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      33,
+      35
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "TextEncodeQwenImageEditPlus"
+   },
+   "widgets_values": [
+    "Redraw the exact same person from the reference image as a full-body side profile view facing left (90 degrees), standing straight, arms relaxed. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both."
+   ],
+   "title": "prompt: side"
+  },
+  {
+   "id": 23,
+   "type": "ConditioningZeroOut",
+   "pos": [
+    2380,
+    1174
+   ],
+   "size": [
+    340,
+    96
+   ],
+   "flags": {},
+   "order": 23,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 33
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      36
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ConditioningZeroOut"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 24,
+   "type": "EmptySD3LatentImage",
+   "pos": [
+    40,
+    1718
+   ],
+   "size": [
+    340,
+    168
+   ],
+   "flags": {},
+   "order": 24,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      37
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "EmptySD3LatentImage"
+   },
+   "widgets_values": [
+    832,
+    1248,
+    1
+   ]
+  },
+  {
+   "id": 25,
+   "type": "KSampler",
+   "pos": [
+    2770,
+    1420
+   ],
+   "size": [
+    340,
+    342
+   ],
+   "flags": {},
+   "order": 25,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 34
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 35
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 36
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 37
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      38
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    42,
+    "fixed",
+    4,
+    1.0,
+    "euler",
+    "simple",
+    1.0
+   ],
+   "title": "sample: side"
+  },
+  {
+   "id": 26,
+   "type": "VAEDecode",
+   "pos": [
+    3160,
+    1200
+   ],
+   "size": [
+    340,
+    122
+   ],
+   "flags": {},
+   "order": 26,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 38
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 39
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      40,
+      68
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 27,
+   "type": "SaveImage",
+   "pos": [
+    3550,
+    1198
+   ],
+   "size": [
+    340,
+    120
+   ],
+   "flags": {},
+   "order": 27,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 40
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SaveImage"
+   },
+   "widgets_values": [
+    "H3Studio/charsheet_side"
+   ],
+   "title": "save side"
+  },
+  {
+   "id": 28,
+   "type": "TextEncodeQwenImageEditPlus",
+   "pos": [
+    1990,
+    1566
+   ],
+   "size": [
+    340,
+    224
+   ],
+   "flags": {},
+   "order": 28,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 41
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 42,
+     "shape": 7
+    },
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 43,
+     "shape": 7
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": 44,
+     "shape": 7
+    },
+    {
+     "name": "image3",
+     "type": "IMAGE",
+     "link": null,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      45,
+      47
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "TextEncodeQwenImageEditPlus"
+   },
+   "widgets_values": [
+    "Redraw the exact same person from the reference image as a full-body rear view, seen from directly behind, standing straight, arms relaxed at the sides. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both."
+   ],
+   "title": "prompt: back"
+  },
+  {
+   "id": 29,
+   "type": "ConditioningZeroOut",
+   "pos": [
+    2380,
+    1310
+   ],
+   "size": [
+    340,
+    96
+   ],
+   "flags": {},
+   "order": 29,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 45
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      48
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ConditioningZeroOut"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 30,
+   "type": "EmptySD3LatentImage",
+   "pos": [
+    40,
+    1926
+   ],
+   "size": [
+    340,
+    168
+   ],
+   "flags": {},
+   "order": 30,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      49
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "EmptySD3LatentImage"
+   },
+   "widgets_values": [
+    832,
+    1248,
+    1
+   ]
+  },
+  {
+   "id": 31,
+   "type": "KSampler",
+   "pos": [
+    2770,
+    1802
+   ],
+   "size": [
+    340,
+    342
+   ],
+   "flags": {},
+   "order": 31,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 46
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 47
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 48
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 49
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      50
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    42,
+    "fixed",
+    4,
+    1.0,
+    "euler",
+    "simple",
+    1.0
+   ],
+   "title": "sample: back"
+  },
+  {
+   "id": 32,
+   "type": "VAEDecode",
+   "pos": [
+    3160,
+    1362
+   ],
+   "size": [
+    340,
+    122
+   ],
+   "flags": {},
+   "order": 32,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 50
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 51
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      52,
+      70
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 33,
+   "type": "SaveImage",
+   "pos": [
+    3550,
+    1358
+   ],
+   "size": [
+    340,
+    120
+   ],
+   "flags": {},
+   "order": 33,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 52
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SaveImage"
+   },
+   "widgets_values": [
+    "H3Studio/charsheet_back"
+   ],
+   "title": "save back"
+  },
+  {
+   "id": 34,
+   "type": "TextEncodeQwenImageEditPlus",
+   "pos": [
+    1990,
+    1830
+   ],
+   "size": [
+    340,
+    224
+   ],
+   "flags": {},
+   "order": 34,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 53
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 54,
+     "shape": 7
+    },
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 55,
+     "shape": 7
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": 56,
+     "shape": 7
+    },
+    {
+     "name": "image3",
+     "type": "IMAGE",
+     "link": null,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      57,
+      59
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "TextEncodeQwenImageEditPlus"
+   },
+   "widgets_values": [
+    "Redraw the exact same person from the reference image as a sharp head-and-shoulders face close-up portrait, facing the camera, neutral expression, even soft lighting. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both."
+   ],
+   "title": "prompt: face"
+  },
+  {
+   "id": 35,
+   "type": "ConditioningZeroOut",
+   "pos": [
+    2380,
+    1446
+   ],
+   "size": [
+    340,
+    96
+   ],
+   "flags": {},
+   "order": 35,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 57
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      60
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ConditioningZeroOut"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 36,
+   "type": "EmptySD3LatentImage",
+   "pos": [
+    40,
+    2134
+   ],
+   "size": [
+    340,
+    168
+   ],
+   "flags": {},
+   "order": 36,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      61
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "EmptySD3LatentImage"
+   },
+   "widgets_values": [
+    1024,
+    1024,
+    1
+   ]
+  },
+  {
+   "id": 37,
+   "type": "KSampler",
+   "pos": [
+    2770,
+    2184
+   ],
+   "size": [
+    340,
+    342
+   ],
+   "flags": {},
+   "order": 37,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 58
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 59
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 60
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 61
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      62
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    42,
+    "fixed",
+    4,
+    1.0,
+    "euler",
+    "simple",
+    1.0
+   ],
+   "title": "sample: face"
+  },
+  {
+   "id": 38,
+   "type": "VAEDecode",
+   "pos": [
+    3160,
+    1524
+   ],
+   "size": [
+    340,
+    122
+   ],
+   "flags": {},
+   "order": 38,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 62
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 63
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      64,
+      72
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 39,
+   "type": "SaveImage",
+   "pos": [
+    3550,
+    1518
+   ],
+   "size": [
+    340,
+    120
+   ],
+   "flags": {},
+   "order": 39,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 64
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SaveImage"
+   },
+   "widgets_values": [
+    "H3Studio/charsheet_face"
+   ],
+   "title": "save face"
+  },
+  {
+   "id": 40,
+   "type": "ImageStitch",
+   "pos": [
+    40,
+    2786
+   ],
+   "size": [
+    340,
+    218
+   ],
+   "flags": {},
+   "order": 40,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 65
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": 66,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      67
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageStitch"
+   },
+   "widgets_values": [
+    "right",
+    true,
+    0,
+    "white"
+   ]
+  },
+  {
+   "id": 41,
+   "type": "ImageStitch",
+   "pos": [
+    430,
+    2786
+   ],
+   "size": [
+    340,
+    218
+   ],
+   "flags": {},
+   "order": 41,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 67
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": 68,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      69
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageStitch"
+   },
+   "widgets_values": [
+    "right",
+    true,
+    0,
+    "white"
+   ]
+  },
+  {
+   "id": 42,
+   "type": "ImageStitch",
+   "pos": [
+    820,
+    2786
+   ],
+   "size": [
+    340,
+    218
+   ],
+   "flags": {},
+   "order": 42,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 69
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": 70,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      71
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageStitch"
+   },
+   "widgets_values": [
+    "right",
+    true,
+    0,
+    "white"
+   ]
+  },
+  {
+   "id": 43,
+   "type": "ImageStitch",
+   "pos": [
+    1210,
+    2786
+   ],
+   "size": [
+    340,
+    218
+   ],
+   "flags": {},
+   "order": 43,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image1",
+     "type": "IMAGE",
+     "link": 71
+    },
+    {
+     "name": "image2",
+     "type": "IMAGE",
+     "link": 72,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      73,
+      74
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageStitch"
+   },
+   "widgets_values": [
+    "right",
+    true,
+    0,
+    "white"
+   ],
+   "title": "sheet = bodies | face"
+  },
+  {
+   "id": 44,
+   "type": "SaveImage",
+   "pos": [
+    1600,
+    2786
+   ],
+   "size": [
+    340,
+    120
+   ],
+   "flags": {},
+   "order": 44,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 73
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SaveImage"
+   },
+   "widgets_values": [
+    "H3Studio/charsheet_SHEET"
+   ],
+   "title": "\u2605 CHARACTER SHEET",
+   "color": "#232",
+   "bgcolor": "#353"
+  },
+  {
+   "id": 45,
+   "type": "PreviewImage",
+   "pos": [
+    1600,
+    2946
+   ],
+   "size": [
+    340,
+    96
+   ],
+   "flags": {},
+   "order": 45,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 74
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "preview"
+  }
+ ],
+ "links": [
+  [
+   1,
+   1,
+   0,
+   2,
+   0,
+   "IMAGE"
+  ],
+  [
+   2,
+   3,
+   0,
+   6,
+   0,
+   "MODEL"
+  ],
+  [
+   3,
+   6,
+   0,
+   7,
+   0,
+   "MODEL"
+  ],
+  [
+   4,
+   7,
+   0,
+   8,
+   0,
+   "MODEL"
+  ],
+  [
+   5,
+   4,
+   0,
+   9,
+   0,
+   "CLIP"
+  ],
+  [
+   6,
+   5,
+   0,
+   9,
+   1,
+   "VAE"
+  ],
+  [
+   7,
+   2,
+   0,
+   9,
+   2,
+   "IMAGE"
+  ],
+  [
+   8,
+   9,
+   0,
+   10,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   9,
+   8,
+   0,
+   12,
+   0,
+   "MODEL"
+  ],
+  [
+   10,
+   9,
+   0,
+   12,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   11,
+   10,
+   0,
+   12,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   12,
+   11,
+   0,
+   12,
+   3,
+   "LATENT"
+  ],
+  [
+   13,
+   12,
+   0,
+   13,
+   0,
+   "LATENT"
+  ],
+  [
+   14,
+   5,
+   0,
+   13,
+   1,
+   "VAE"
+  ],
+  [
+   15,
+   13,
+   0,
+   14,
+   0,
+   "IMAGE"
+  ],
+  [
+   16,
+   13,
+   0,
+   15,
+   0,
+   "IMAGE"
+  ],
+  [
+   17,
+   4,
+   0,
+   16,
+   0,
+   "CLIP"
+  ],
+  [
+   18,
+   5,
+   0,
+   16,
+   1,
+   "VAE"
+  ],
+  [
+   19,
+   15,
+   0,
+   16,
+   2,
+   "IMAGE"
+  ],
+  [
+   20,
+   2,
+   0,
+   16,
+   3,
+   "IMAGE"
+  ],
+  [
+   21,
+   16,
+   0,
+   17,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   22,
+   8,
+   0,
+   19,
+   0,
+   "MODEL"
+  ],
+  [
+   23,
+   16,
+   0,
+   19,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   24,
+   17,
+   0,
+   19,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   25,
+   18,
+   0,
+   19,
+   3,
+   "LATENT"
+  ],
+  [
+   26,
+   19,
+   0,
+   20,
+   0,
+   "LATENT"
+  ],
+  [
+   27,
+   5,
+   0,
+   20,
+   1,
+   "VAE"
+  ],
+  [
+   28,
+   20,
+   0,
+   21,
+   0,
+   "IMAGE"
+  ],
+  [
+   29,
+   4,
+   0,
+   22,
+   0,
+   "CLIP"
+  ],
+  [
+   30,
+   5,
+   0,
+   22,
+   1,
+   "VAE"
+  ],
+  [
+   31,
+   15,
+   0,
+   22,
+   2,
+   "IMAGE"
+  ],
+  [
+   32,
+   2,
+   0,
+   22,
+   3,
+   "IMAGE"
+  ],
+  [
+   33,
+   22,
+   0,
+   23,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   34,
+   8,
+   0,
+   25,
+   0,
+   "MODEL"
+  ],
+  [
+   35,
+   22,
+   0,
+   25,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   36,
+   23,
+   0,
+   25,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   37,
+   24,
+   0,
+   25,
+   3,
+   "LATENT"
+  ],
+  [
+   38,
+   25,
+   0,
+   26,
+   0,
+   "LATENT"
+  ],
+  [
+   39,
+   5,
+   0,
+   26,
+   1,
+   "VAE"
+  ],
+  [
+   40,
+   26,
+   0,
+   27,
+   0,
+   "IMAGE"
+  ],
+  [
+   41,
+   4,
+   0,
+   28,
+   0,
+   "CLIP"
+  ],
+  [
+   42,
+   5,
+   0,
+   28,
+   1,
+   "VAE"
+  ],
+  [
+   43,
+   15,
+   0,
+   28,
+   2,
+   "IMAGE"
+  ],
+  [
+   44,
+   2,
+   0,
+   28,
+   3,
+   "IMAGE"
+  ],
+  [
+   45,
+   28,
+   0,
+   29,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   46,
+   8,
+   0,
+   31,
+   0,
+   "MODEL"
+  ],
+  [
+   47,
+   28,
+   0,
+   31,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   48,
+   29,
+   0,
+   31,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   49,
+   30,
+   0,
+   31,
+   3,
+   "LATENT"
+  ],
+  [
+   50,
+   31,
+   0,
+   32,
+   0,
+   "LATENT"
+  ],
+  [
+   51,
+   5,
+   0,
+   32,
+   1,
+   "VAE"
+  ],
+  [
+   52,
+   32,
+   0,
+   33,
+   0,
+   "IMAGE"
+  ],
+  [
+   53,
+   4,
+   0,
+   34,
+   0,
+   "CLIP"
+  ],
+  [
+   54,
+   5,
+   0,
+   34,
+   1,
+   "VAE"
+  ],
+  [
+   55,
+   15,
+   0,
+   34,
+   2,
+   "IMAGE"
+  ],
+  [
+   56,
+   2,
+   0,
+   34,
+   3,
+   "IMAGE"
+  ],
+  [
+   57,
+   34,
+   0,
+   35,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   58,
+   8,
+   0,
+   37,
+   0,
+   "MODEL"
+  ],
+  [
+   59,
+   34,
+   0,
+   37,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   60,
+   35,
+   0,
+   37,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   61,
+   36,
+   0,
+   37,
+   3,
+   "LATENT"
+  ],
+  [
+   62,
+   37,
+   0,
+   38,
+   0,
+   "LATENT"
+  ],
+  [
+   63,
+   5,
+   0,
+   38,
+   1,
+   "VAE"
+  ],
+  [
+   64,
+   38,
+   0,
+   39,
+   0,
+   "IMAGE"
+  ],
+  [
+   65,
+   13,
+   0,
+   40,
+   0,
+   "IMAGE"
+  ],
+  [
+   66,
+   20,
+   0,
+   40,
+   1,
+   "IMAGE"
+  ],
+  [
+   67,
+   40,
+   0,
+   41,
+   0,
+   "IMAGE"
+  ],
+  [
+   68,
+   26,
+   0,
+   41,
+   1,
+   "IMAGE"
+  ],
+  [
+   69,
+   41,
+   0,
+   42,
+   0,
+   "IMAGE"
+  ],
+  [
+   70,
+   32,
+   0,
+   42,
+   1,
+   "IMAGE"
+  ],
+  [
+   71,
+   42,
+   0,
+   43,
+   0,
+   "IMAGE"
+  ],
+  [
+   72,
+   38,
+   0,
+   43,
+   1,
+   "IMAGE"
+  ],
+  [
+   73,
+   43,
+   0,
+   44,
+   0,
+   "IMAGE"
+  ],
+  [
+   74,
+   43,
+   0,
+   45,
+   0,
+   "IMAGE"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "1 \u00b7 INPUT + MODELS",
+   "bounding": [
+    10,
+    0,
+    1610,
+    838
+   ],
+   "color": "#3f789e",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "2 \u00b7 VIEWS (one edit pass each)",
+   "bounding": [
+    10,
+    958,
+    3950,
+    1628
+   ],
+   "color": "#3f789e",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "3 \u00b7 SHEET",
+   "bounding": [
+    10,
+    2706,
+    2000,
+    396
+   ],
+   "color": "#3f789e",
+   "font_size": 24,
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "frontendVersion": "1.x"
+ },
+ "version": 0.4
+}

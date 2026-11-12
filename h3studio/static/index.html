@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>H3 Studio</title>
+<style>
+:root{--bg:#0e1116;--panel:#171b22;--panel2:#1e2430;--line:#2b3342;--tx:#e6e9ef;--mut:#8b95a7;--acc:#7c5cff;--acc2:#27c4a8;--bad:#ff5d6c;--ok:#3ddc97;--warn:#ffb84d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:12px 24px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:5}
+h1{font-size:17px;margin:0;letter-spacing:.3px}h1 b{color:var(--acc)}
+nav{display:flex;gap:4px;margin-left:24px}
+nav button{background:none;border:0;color:var(--mut);padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit;font-weight:600}
+nav button.on{background:var(--panel2);color:var(--tx)}
+#stat{margin-left:auto;display:flex;gap:14px;align-items:center;color:var(--mut);font-size:12px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--bad);display:inline-block;margin-right:6px}.dot.ok{background:var(--ok)}
+main{max-width:1280px;margin:0 auto;padding:20px 24px 60px}
+.tab{display:none}.tab.on{display:grid;grid-template-columns:minmax(340px,430px) 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.tab.on{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut);margin:0 0 12px}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--mut);cursor:pointer;position:relative;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--acc);color:var(--tx)}
+.drop img,.drop video{max-width:100%;max-height:170px;border-radius:8px}
+.drop small{font-size:11px}
+.drop.has{border-style:solid}
+label{display:block;margin:12px 0 4px;color:var(--mut);font-size:12px;font-weight:600}
+input[type=text],textarea,select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--tx);padding:8px 10px;font:inherit}
+textarea{min-height:60px;resize:vertical}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.val{float:right;color:var(--tx);font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:8px;align-items:flex-start;margin:9px 0;cursor:pointer}
+.chk input{margin-top:3px;accent-color:var(--acc)}.chk span{font-size:13px}.chk small{display:block;color:var(--mut);font-size:11.5px}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;background:none;border:0;color:var(--mut);padding:8px;border-radius:8px;cursor:pointer;font:inherit;font-weight:600}
+.seg button.on{background:var(--acc);color:#fff}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 30%;font-size:12.5px;padding:7px 4px}
+select{appearance:auto}
+button.go{width:100%;margin-top:16px;background:linear-gradient(90deg,var(--acc),#5b8cff);border:0;color:#fff;padding:13px;border-radius:10px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+button.go:disabled{opacity:.45;cursor:not-allowed}
+button.sm{background:var(--panel2);border:1px solid var(--line);color:var(--tx);padding:6px 10px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+button.sm:hover{border-color:var(--acc)}
+details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}summary{cursor:pointer;color:var(--mut);font-weight:600}
+.job{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.job .h{display:flex;gap:8px;align-items:center}.job .h b{flex:1}
+.badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--line)}
+.badge.running{background:var(--acc)}.badge.done{background:var(--ok);color:#052}.badge.error{background:var(--bad)}.badge.queued{background:var(--warn);color:#320}
+.bar{height:7px;background:var(--bg);border-radius:9px;overflow:hidden;margin:9px 0 4px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0;transition:width .3s}
+.mut{color:var(--mut);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:10px}
+.grid figure{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.grid img,.grid video{width:100%;display:block;background:#000}
+.grid figcaption{padding:6px 8px;font-size:11px;color:var(--mut);display:flex;gap:6px;align-items:center;justify-content:space-between}
+.hero img,.hero video{width:100%;border-radius:10px;background:#000;max-height:70vh}
+.warn{background:#3a2d12;border:1px solid #6b4f12;color:var(--warn);padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:12px}
+.err{color:var(--bad);font-size:12.5px;margin-top:6px;white-space:pre-wrap}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border:1px solid var(--line);border-radius:99px;margin:2px;color:var(--mut)}
+.views label{display:inline-flex;align-items:center;gap:5px;margin:3px 10px 3px 0;font-weight:500;color:var(--tx)}
+</style>
+</head>
+<body>
+<header>
+  <h1>H3 <b>Studio</b> <span class="mut">· character sheet → video swap</span></h1>
+  <nav>
+    <button data-t="sheet" class="on">① Character sheet</button>
+    <button data-t="swap">② Video swap</button>
+    <button data-t="queue">③ Queue &amp; results</button>
+  </nav>
+  <div id="stat"><span><i class="dot" id="dot"></i><span id="comfy">connecting…</span></span><span id="gpu"></span></div>
+</header>
+<main>
+<div id="missing"></div>
+
+<!-- ============ SHEET ============ -->
+<section class="tab on" id="t-sheet">
+  <div>
+    <div class="card">
+      <h2>Input photo</h2>
+      <div class="drop" id="d-sheet" data-kind="image"><span>Drop a photo of the person / character<br><small>full body works best · or click</small></span></div>
+      <label>What is it?</label>
+      <select id="s-subject"><option value="person">person</option><option value="animal">animal</option><option value="creature">character / creature / robot</option><option value="vehicle">vehicle</option><option value="object">object</option></select>
+      <label>Outfit (leave empty = keep as in photo)</label>
+      <input type="text" id="s-outfit" placeholder="e.g. black leather jacket, white tee, blue jeans, white sneakers">
+      <label>Extra instructions</label>
+      <textarea id="s-extra" placeholder="e.g. short curly hair, small scar on left cheek"></textarea>
+      <label>Views</label>
+      <div class="views" id="s-views">
+        <label><input type="checkbox" value="front" checked disabled> front (anchor)</label>
+        <label><input type="checkbox" value="three_quarter" checked> 3/4</label>
+        <label><input type="checkbox" value="side" checked> side</label>
+        <label><input type="checkbox" value="back" checked> back</label>
+        <label><input type="checkbox" value="face" checked> face close-up</label>
+      </div>
+      <label>Quality</label>
+      <div class="seg" id="s-q"><button data-v="fast">Fast · 4 steps (draft)</button><button data-v="best" class="on">Best · 30 steps (most accurate)</button></div>
+      <details><summary>Advanced</summary>
+        <label>Seed <span class="mut">(blank = random)</span></label><input type="number" id="s-seed" placeholder="random">
+        <label class="chk"><input type="checkbox" id="s-low"><span>Low-memory mode <small>fp8 weights for the 20 GB edit model</small></span></label>
+      </details>
+      <button class="go" id="go-sheet" disabled>Create character sheet</button>
+      <div class="err" id="e-sheet"></div>
+    </div>
+  </div>
+  <div class="card hero" id="r-sheet"><h2>Result</h2><div class="mut">The finished sheet appears here. Then press “Use in video swap”.</div></div>
+</section>
+
+<!-- ============ SWAP ============ -->
+<section class="tab" id="t-swap">
+  <div>
+    <div class="card">
+      <h2>Inputs</h2>
+      <div class="row">
+        <div><div class="drop" id="d-video" data-kind="video"><span>① Source video<br><small>mp4 / mov · up to 15 s per run</small></span></div></div>
+        <div><div class="drop" id="d-char" data-kind="image"><span id="d-char-lbl">② New character<br><small>photo or sheet</small></span></div></div>
+      </div>
+      <div class="mut" id="vinfo" style="margin-top:6px"></div>
+      <label>What do you want to do?</label>
+      <div class="seg wrap" id="w-case">
+        <button data-v="swap" class="on">Character swap</button><button data-v="dance">Dance copy</button>
+        <button data-v="lipsync">Lip-sync / talk</button><button data-v="vehicle">Vehicle swap</button>
+        <button data-v="animal">Animal swap</button><button data-v="podcast">Podcast / 2+ people</button><button data-v="scene">Scene rebuild</button>
+        <button data-v="mocap">Motion capture only</button>
+      </div>
+      <div class="mut" id="w-casehelp" style="margin-top:6px"></div>
+      <label>Mode</label>
+      <div class="seg" id="w-mode"><button data-v="object" class="on">Object Swap</button><button data-v="motion">Motion Transfer</button></div>
+      <div class="mut" id="w-modehelp" style="margin-top:6px">Replaces the person (and optionally a vehicle). Background, camera, lighting and audio stay exactly as filmed.</div>
+      <div id="w-motion" style="display:none">
+        <label>New scene / location (text)</label><textarea id="w-scene" placeholder="e.g. a neon-lit rainy Tokyo street at night, wet asphalt, shallow depth of field"></textarea>
+        <label>Location photo (optional)</label>
+        <div class="drop" id="d-loc" data-kind="image"><span><small>drop a location image</small></span></div>
+      </div>
+      <label>Preset</label>
+      <div class="seg" id="w-preset"><button data-v="draft">Draft</button><button data-v="quality" class="on">Quality</button><button data-v="max">Max</button></div>
+      <div class="mut" id="w-presethelp" style="margin-top:6px"></div>
+      <label>Clip length <span class="val" id="v-sec">5 s</span></label><input type="range" id="w-sec" min="2" max="15" step="0.5" value="5">
+      <label>Start at <span class="val" id="v-start">0 s</span></label><input type="range" id="w-start" min="0" max="60" step="0.5" value="0">
+      <label>Resolution <span class="val" id="v-mp">0.6 MP</span></label><input type="range" id="w-mp" min="0.3" max="1.2" step="0.02" value="0.6">
+      <div class="mut" id="w-res"></div>
+    </div>
+    <div class="card" id="c-people" style="margin-top:14px;display:none">
+      <h2>People in the video → new characters</h2>
+      <div class="mut">1) press Detect, 2) look at the numbered IDs, 3) give each person a new character image and pick its ID + position.</div>
+      <button class="sm" id="b-detect" style="margin:8px 0">🔍 Detect people in the source video</button>
+      <div id="people-prev" class="mut"></div>
+      <div id="slots"></div>
+      <button class="sm" id="b-addslot" style="margin-top:8px">+ add another person</button>
+    </div>
+    <div class="card" id="c-voice" style="margin-top:14px">
+      <h2>Voice / lip-sync</h2>
+      <div class="seg" id="w-voice"><button data-v="source" class="on">Keep original speech</button><button data-v="custom">New voice file</button><button data-v="none">No lip-sync</button></div>
+      <div class="mut" style="margin-top:6px">Original speech: the character copies the actor's lip movements. New voice: upload an audio file — the character speaks it with matching lips and the clip uses that audio.</div>
+      <div id="w-voicebox" style="display:none;margin-top:8px"><div class="drop" id="d-voice" data-kind="audio"><span><small>drop an mp3 / wav</small></span></div></div>
+    </div>
+    <div class="card" id="c-extra" style="margin-top:14px">
+      <h2>Second target (optional)</h2>
+      <label class="chk"><input type="checkbox" id="w-xon"><span>Also replace another thing in the video <small>e.g. the person's car, or their dog — with its own reference photo</small></span></label>
+      <div id="w-xbox" style="display:none">
+        <div class="row"><select id="w-xkind"><option>vehicle</option><option>animal</option><option>object</option><option>person</option></select><input type="text" id="w-xtxt" placeholder="what to find: e.g. red car"><input type="text" id="w-xidx" value="0" style="max-width:60px" title="track index"></div>
+        <div class="drop" id="d-extra" data-kind="image" style="margin-top:8px"><span><small>drop the new vehicle / animal image</small></span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Describe the new person</h2>
+      <label>Identity / who is it (optional) <button class="sm" id="b-desc" style="float:right">✨ auto-describe from image</button></label><input type="text" id="w-ident" placeholder="e.g. a woman in her 30s with long dark hair">
+      <label>Body type</label><input type="text" id="w-body" placeholder="e.g. tall, athletic build">
+      <label>Accessories to keep / remove / fix</label><input type="text" id="w-acc" placeholder="e.g. wears round glasses and a silver watch">
+      <label>Who to replace in the video</label>
+      <div class="row"><input type="text" id="w-ptxt" placeholder="person (or: dog, red car, woman on the left)" title="SAM3 text"><input type="text" id="w-pidx" value="0" style="max-width:70px" title="track index"></div>
+      <div class="mut">text (e.g. “woman on the left”) · track index (0 = first found; see Tracked preview)</div>
+      
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Controls</h2>
+      <label class="chk"><input type="checkbox" id="w-dance"><span>DANCE / FAST MOTION <small>stronger pose control</small></span></label>
+      <label class="chk"><input type="checkbox" id="w-cam"><span>CAMERA IS MOVING <small>turns the background lock off (handheld / pans)</small></span></label>
+      <label class="chk"><input type="checkbox" id="w-leak"><span>Leak guard <small>greys the old person out in the motion reference, so their look can't bleed through</small></span></label>
+      <label>Motion control</label>
+      <select id="w-ctl"><option value="auto">auto (pose for people · depth for animals/vehicles)</option><option value="pose">pose skeleton</option><option value="depth">depth</option><option value="canny">edges (canny)</option><option value="none">none (prompt + references only)</option></select>
+      <label class="chk"><input type="checkbox" id="w-smooth"><span>Smooth to 48 fps <small>RIFE interpolation of the result</small></span></label>
+      <div id="w-longbox" style="display:none"><label class="chk"><input type="checkbox" id="w-long" checked><span>Process the whole video in segments <small>H3 does ≤ 15 s per pass; parts are joined with ffmpeg</small></span></label>
+        <label>Segment length <span class="val" id="v-seg">8 s</span></label><input type="range" id="w-seg" min="4" max="15" step="1" value="8"></div>
+      <details open><summary>Quality &amp; memory</summary>
+        <label>Steps <span class="val" id="v-steps">24</span></label><input type="range" id="w-steps" min="4" max="60" step="1" value="24">
+        <label class="chk"><input type="checkbox" id="w-turbo"><span>Turbo LoRA <small>~6 steps, fast; softer motion and weaker identity — use for tests</small></span></label>
+        <label class="chk"><input type="checkbox" id="w-refmax"><span>Max reference detail <small>identity on small faces, ~20% slower</small></span></label>
+        <label class="chk"><input type="checkbox" id="w-low" checked><span>Low-VRAM chunking <small>fits 15 s / 768p in 32 GB</small></span></label>
+        <label class="chk"><input type="checkbox" id="w-cn" checked><span>Pose ControlNet <small>skeleton of the tracked person (keep ON)</small></span></label>
+        <label>Pose strength <span class="val" id="v-cn">0.9</span></label><input type="range" id="w-cns" min="0.2" max="1.3" step="0.05" value="0.9">
+        <label class="chk"><input type="checkbox" id="w-audio" checked><span>Keep original audio</span></label>
+        <label>Seed <span class="mut">(blank = random)</span></label><input type="number" id="w-seed" placeholder="random">
+      </details>
+      <details><summary>Prompt (auto-built, read-only preview)</summary><textarea id="w-prompt" readonly style="min-height:150px"></textarea></details>
+      <button class="go" id="go-swap" disabled>Generate</button><div class="mut" id="mocap-note" style="display:none">Motion capture needs only the source video.</div>
+      <div class="err" id="e-swap"></div>
+    </div>
+  </div>
+  <div>
+    <div class="card hero" id="r-swap"><h2>Result</h2><div class="mut">Your video appears here. Use <b>Draft</b> to test the mask / tracking first, then <b>Quality</b> or <b>Max</b>.</div></div>
+    <div class="card" style="margin-top:14px"><h2>Live job</h2><div id="live" class="mut">Nothing running.</div></div>
+  </div>
+</section>
+
+<!-- ============ QUEUE ============ -->
+<section class="tab" id="t-queue" style="grid-template-columns:1fr"><div class="card"><h2>All jobs</h2><div id="jobs"></div></div></section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const S={sheetImg:null,video:null,char:null,loc:null,jobs:{},lastSheet:null};
+const view=(f,dl)=>`/api/view?filename=${encodeURIComponent(f.filename)}&subfolder=${encodeURIComponent(f.subfolder||'')}&type=${f.type||'output'}${dl?'&dl=1':''}`;
+
+// tabs
+$$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classList.toggle('on',x===b));$$('.tab').forEach(t=>t.classList.toggle('on',t.id==='t-'+b.dataset.t))});
+const gotoTab=t=>$(`nav button[data-t=${t}]`).click();
+function seg(id,cb){$$(`#${id} button`).forEach(b=>b.onclick=()=>{$$(`#${id} button`).forEach(x=>x.classList.toggle('on',x===b));cb&&cb(b.dataset.v)})}
+const segv=id=>$(`#${id} button.on`).dataset.v;
+
+// upload
+function setupDrop(id,key,after){
+  const d=$(id),inp=document.createElement('input');inp.type='file';inp.accept={video:'video/*',audio:'audio/*,video/*'}[d.dataset.kind]||'image/*';inp.hidden=true;d.append(inp);
+  d.onclick=e=>{if(e.target!==inp)inp.click()};
+  ['dragover','dragenter'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.add('over')}));
+  ['dragleave','drop'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.remove('over')}));
+  d.addEventListener('drop',e=>{if(e.dataTransfer.files[0])up(e.dataTransfer.files[0])});
+  inp.onchange=()=>inp.files[0]&&up(inp.files[0]);
+  async function up(file){
+    const url=URL.createObjectURL(file);
+    d.classList.add('has');d.innerHTML=`<span class="mut">uploading ${file.name}…</span>`;d.append(inp);
+    const fd=new FormData();fd.append('file',file);
+    const r=await fetch('/api/upload',{method:'POST',body:fd}).then(r=>r.json());
+    d.innerHTML=file.type.startsWith('audio')?`<audio src="${url}" controls></audio>`:file.type.startsWith('video')?`<video src="${url}" muted loop autoplay playsinline></video>`:`<img src="${url}">`;
+    d.insertAdjacentHTML('beforeend',`<small>${file.name}</small>`);d.append(inp);
+    S[key]=r;after&&after(r);refresh();
+  }
+}
+setupDrop('#d-sheet','sheetImg');
+setupDrop('#d-video','video',r=>{
+  if(r.duration){$('#vinfo').textContent=`${r.width}×${r.height} · ${r.fps} fps · ${r.duration}s`;const m=Math.min(15,Math.floor(r.duration*2)/2);$('#w-sec').max=Math.max(2,m);$('#w-sec').value=Math.min($('#w-sec').value,m);$('#w-start').max=Math.max(0,Math.floor(r.duration-2));$('#w-longbox').style.display=r.duration>15.5?'block':'none';if(r.duration>15.5){$('#w-sec').max=Math.min(120,Math.floor(r.duration));$('#w-sec').value=Math.floor(r.duration)}upd()}
+});
+setupDrop('#d-char','char');setupDrop('#d-loc','loc');setupDrop('#d-extra','extra');setupDrop('#d-voice','voice');
+
+// sheet
+seg('s-q');
+$('#go-sheet').onclick=async()=>{
+  $('#e-sheet').textContent='';
+  const views=['front',...$$('#s-views input:checked:not(:disabled)').map(x=>x.value)];
+  const best=segv('s-q')==='best';
+  const params={subject:$('#s-subject').value,lightning:!best,steps:best?30:4,cfg:best?4:1,outfit:$('#s-outfit').value,extra:$('#s-extra').value,views,low_mem:$('#s-low').checked};
+  if($('#s-seed').value)params.seed=+$('#s-seed').value;
+  const r=await fetch('/api/run/sheet',{method:'POST',body:JSON.stringify({image:S.sheetImg.name,params})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));$('#e-sheet').textContent=(e.error||'failed')+'\n'+(e.details||[]).join('\n');return}
+  $('#r-sheet').innerHTML='<h2>Result</h2><div class="mut">Queued…</div>';
+};
+
+// swap presets
+const PRESETS={
+  draft:{turbo:true,steps:6,mp:.5,sec:5,refmax:false,help:'Turbo 6 steps · 0.5 MP · fastest. Check tracking, skeleton and replace-area previews before a long run.'},
+  quality:{turbo:false,steps:24,mp:.6,sec:null,refmax:false,help:'No speed LoRA · 24 steps (H3 docs: 20-25 when references must hold) · 0.6 MP.'},
+  max:{turbo:false,steps:32,mp:.98,sec:null,refmax:true,help:'32 steps · ~768p · max reference detail. Slowest; keep clips short (≤ 8 s).'}};
+function applyPreset(k){const p=PRESETS[k];$('#w-turbo').checked=p.turbo;$('#w-steps').value=p.steps;$('#w-mp').value=p.mp;$('#w-refmax').checked=p.refmax;if(p.sec)$('#w-sec').value=p.sec;$('#w-presethelp').textContent=p.help;upd()}
+seg('w-preset',applyPreset);
+seg('w-mode',v=>{$('#w-motion').style.display=v==='motion'?'block':'none';
+  $('#w-modehelp').textContent=v==='motion'?'Keeps only the motion and camera movement. The whole scene is rebuilt from your text / location photo. Background lock is off.':'Replaces the person (and optionally a vehicle). Background, camera, lighting and audio stay exactly as filmed.';upd()});
+$('#w-veh').onchange=()=>{$('#w-vtxt').style.display=$('#w-veh').checked?'block':'none'};
+let t0;function upd(){
+  $('#v-sec').textContent=$('#w-sec').value+' s';$('#v-start').textContent=$('#w-start').value+' s';$('#v-mp').textContent=(+$('#w-mp').value).toFixed(2)+' MP';
+  $('#v-steps').textContent=$('#w-steps').value;$('#v-cn').textContent=$('#w-cns').value;
+  const mp=+$('#w-mp').value,ar=S.video&&S.video.width?S.video.width/S.video.height:16/9;
+  const h=Math.round(Math.sqrt(mp*1e6/ar)/32)*32,w=Math.round(h*ar/32)*32;$('#w-res').textContent=`≈ ${w}×${h} px · ${17*Math.round((Math.round($('#w-sec').value*24)-5)/17)+5} frames`;
+  clearTimeout(t0);t0=setTimeout(async()=>{const r=await fetch('/api/prompt',{method:'POST',body:JSON.stringify(collect())}).then(r=>r.json());$('#w-prompt').value=r.prompt},250)}
+$$('#t-swap input,#t-swap textarea').forEach(e=>e.addEventListener('input',upd));
+const CASES={
+  swap:{mode:'object',subject:'person',ctl:'auto',cn:.9,dance:false,help:'Replace the person; background, camera, light and audio stay as filmed.',lbl:'② New character<br><small>photo or character sheet</small>'},
+  dance:{mode:'object',subject:'person',ctl:'pose',cn:1.0,dance:true,help:'Copy a dance / fast move onto a new character. Strong pose control. Pick "Motion Transfer" to also rebuild the scene.',lbl:'② Dancer to be<br><small>full-body photo or sheet</small>'},
+  lipsync:{mode:'object',subject:'person',ctl:'pose',cn:.8,dance:false,voice:'custom',help:'Talking clips: keep the original speech, or upload a NEW voice and the character speaks it with matching lips. Face-forward close/medium shots work best.',lbl:'② Speaker<br><small>photo (clear face)</small>'},
+  vehicle:{mode:'object',subject:'vehicle',ctl:'depth',cn:.7,dance:false,ptxt:'car',help:'Replace a car / bike / boat. Depth keeps its path and perspective. Say what to find (e.g. "red car"). Turn on CAMERA IS MOVING if the camera follows it.',lbl:'② New vehicle<br><small>side / 3-4 view photo</small>'},
+  animal:{mode:'object',subject:'animal',ctl:'depth',cn:.7,dance:false,ptxt:'dog',help:'Replace an animal (dog, horse, cat…) with another animal or character. Depth carries the gait.',lbl:'② New animal / creature<br><small>clear full-body photo</small>'},
+  podcast:{mode:'object',subject:'person',ctl:'pose',cn:.9,dance:false,podcast:true,help:'Replace TWO (or more) people — podcast, interview, duo. Press Detect, then give every person their own character image, track ID and position. Keep the camera fixed for the best result.',lbl:''},
+  scene:{mode:'motion',subject:'person',ctl:'auto',cn:.8,dance:false,help:'Keep ONLY the motion and camera; rebuild the whole scene from your text and/or a location photo.',lbl:'② New character<br><small>photo or sheet</small>'},
+  mocap:{mode:'object',subject:'person',ctl:'auto',cn:.9,dance:false,help:'No generation: extracts skeleton, depth and mask videos from the source for reuse.',lbl:''}};
+function applyCase(k){
+  const c=CASES[k];S.case=k;$('#w-casehelp').textContent=c.help;
+  $$('#w-mode button').forEach(b=>b.classList.toggle('on',b.dataset.v===c.mode));$('#w-motion').style.display=c.mode==='motion'?'block':'none';
+  $('#w-ctl').value=c.ctl;$('#w-cns').value=c.cn;$('#w-dance').checked=c.dance;
+  if(c.ptxt!==undefined)$('#w-ptxt').value=c.ptxt;else $('#w-ptxt').value='';
+  if(c.voice){$$('#w-voice button').forEach(b=>b.classList.toggle('on',b.dataset.v===c.voice));$('#w-voicebox').style.display=c.voice==='custom'?'block':'none'}
+  if(!S.char&&c.lbl){const l=$('#d-char-lbl');if(l)l.innerHTML=c.lbl}
+  const m=k==='mocap',pod=!!c.podcast;$('#d-char').parentElement.style.display=(m||pod)?'none':'';$('#c-people').style.display=pod?'block':'none';if(pod&&!S.slotsInit)initSlots();
+  ['c-voice','c-extra'].forEach(i=>$('#'+i).style.display=m?'none':'');
+  $('#go-swap').textContent=m?'Capture motion':'Generate';$('#mocap-note').style.display=m?'block':'none';
+  refresh();upd()}
+seg('w-case',applyCase);
+seg('w-voice',v=>{$('#w-voicebox').style.display=v==='custom'?'block':'none';upd()});
+$('#w-xon').onchange=()=>{$('#w-xbox').style.display=$('#w-xon').checked?'block':'none';upd()};
+$('#w-seg').oninput=()=>$('#v-seg').textContent=$('#w-seg').value+' s';
+function collect(){
+  const turbo=$('#w-turbo').checked,c=CASES[S.case||'swap'];
+  const xon=$('#w-xon').checked&&S.extra;
+  return {mode:segv('w-mode'),subject:c.subject,control:$('#w-ctl').value,seconds:+$('#w-sec').value,start:+$('#w-start').value,megapixels:+$('#w-mp').value,
+    turbo,steps_turbo:+$('#w-steps').value,steps_full:+$('#w-steps').value,controlnet:$('#w-cn').checked,cn_strength:+$('#w-cns').value,cn_end:c.subject==='person'?1.0:0.8,
+    dance:$('#w-dance').checked,camera_moving:$('#w-cam').checked,leak_guard:$('#w-leak').checked,orig_audio:$('#w-audio').checked,
+    audio_ref:true,ref_size:$('#w-refmax').checked?'max':'match',low_mem:$('#w-low').checked,smooth:$('#w-smooth').checked,
+    voice:segv('w-voice')==='custom'&&!S.voice?'source':segv('w-voice'),voice_file:S.voice?S.voice.name:null,
+    person_text:$('#w-ptxt').value.trim(),person_index:$('#w-pidx').value,identity:$('#w-ident').value,body_type:$('#w-body').value,
+    accessories:$('#w-acc').value,scene:$('#w-scene').value,location:S.loc&&segv('w-mode')==='motion'?S.loc.name:null,
+    extra_kind:xon?$('#w-xkind').value:'',extra_text:xon?$('#w-xtxt').value:'',extra_index:$('#w-xidx').value||'0',extra_image:xon?S.extra.name:null,
+    characters:c.podcast?slotChars():null,
+    ...($('#w-seed').value?{seed:+$('#w-seed').value}:{seed:Math.floor(Math.random()*2**31)})}}
+$('#go-swap').onclick=async()=>{
+  $('#e-swap').textContent='';const p=collect();let r;
+  if(S.case==='mocap'){
+    r=await fetch('/api/run/mocap',{method:'POST',body:JSON.stringify({video:S.video.name,params:{seconds:p.seconds,start:p.start,megapixels:p.megapixels,person_text:p.person_text,person_index:p.person_index,depth:true}})});
+  }else{
+    const long=$('#w-longbox').style.display!=='none'&&$('#w-long').checked;
+    r=await fetch('/api/run/swap',{method:'POST',body:JSON.stringify({video:S.video.name,character:(p.characters&&p.characters[0]?p.characters[0].image:S.char.name),location:p.location,extra_image:p.extra_image,voice_file:p.voice_file,
+      params:p,long,duration:S.video.duration||0,segment:+$('#w-seg').value})});
+  }
+  if(!r.ok){const e=await r.json().catch(()=>({}));$('#e-swap').textContent=(e.error||'failed')+'\n'+(e.details||[]).join('\n');return}
+  $('#r-swap').innerHTML='<h2>Result</h2><div class="mut">Queued…</div>';
+};
+$('#b-desc').onclick=async e=>{e.preventDefault();if(!S.char){alert('Upload the character image first');return}
+  $('#b-desc').textContent='describing…';const r=await fetch('/api/run/describe',{method:'POST',body:JSON.stringify({image:S.char.name})}).then(r=>r.json());S.descJob=r.id};
+function refresh(){$('#go-sheet').disabled=!S.sheetImg;const pod=S.case==='podcast'?slotChars().length>=2:!!S.char;$('#go-swap').disabled=!(S.video&&(pod||S.case==='mocap'))}
+
+// jobs
+function renderJob(j){
+  S.jobs[j.id]=j;
+  const pct=j.percent!=null?` · ${j.step||''} ${j.percent}%`:'';
+  const outs=(j.outputs||[]).filter(o=>!/^check/.test(o.title||''));
+  const html=`<div class="h"><b>${j.label}</b><span class="badge ${j.status}">${j.status}</span>
+      ${['queued','running'].includes(j.status)?`<button class="sm" onclick="cancel('${j.id}')">cancel</button>`:''}</div>
+    <div class="bar"><i style="width:${j.overall}%"></i></div>
+    <div class="mut">${j.status==='running'?`${j.stage||''}${pct} · overall ${j.overall}%`:j.status==='error'?'':new Date(j.created*1000).toLocaleTimeString()}</div>
+    ${j.error?`<div class="err">${j.error} ${j.node_type?'('+j.node_type+')':''}</div>`:''}`;
+  let el=$('#job-'+j.id);if(!el){el=document.createElement('div');el.className='job';el.id='job-'+j.id;$('#jobs').prepend(el)}
+  el.innerHTML=html+(j.status==='done'||j.outputs.length?gallery(j):'');
+  if(j.kind==='swap'||j.kind==='mocap')$('#live').innerHTML=html;
+  if(j.kind==='describe'&&j.id===S.descJob&&j.status==='done'&&j.text){$('#w-ident').value=j.text.trim();$('#b-desc').textContent='✨ auto-describe from image';S.descJob=null;upd()}
+  if(j.kind==='describe'&&j.status==='error'){$('#b-desc').textContent='✨ auto-describe from image'}
+  if(j.status==='done'||outs.length){hero(j)}
+}
+function gallery(j){
+  const f=(j.outputs||[]);if(!f.length)return'';
+  return '<div class="grid">'+f.map(o=>{const u=view(o);const vid=/\.(mp4|webm|mov)$/i.test(o.filename);
+    return `<figure>${vid?`<video src="${u}" controls loop muted></video>`:`<a href="${u}" target="_blank"><img loading="lazy" src="${u}"></a>`}
+      <figcaption><span>${o.title||o.filename}</span><a class="sm" style="color:var(--acc2)" href="${view(o,1)}">save</a></figcaption></figure>`}).join('')+'</div>'}
+function hero(j){
+  const outs=j.outputs||[];
+  if(j.kind==='people'){
+    if(j.id!==S.peopleJob)return;
+    const items=outs.map(o=>/\.(mp4|webm)$/i.test(o.filename)?`<video src="${view(o)}" controls loop autoplay muted style="width:100%;border-radius:8px"></video>`:`<img src="${view(o)}" style="width:100%;border-radius:8px">`);
+    $('#people-prev').innerHTML=items.length?`<div class="mut" style="margin-bottom:6px">Each person has an ID. Match it below.</div><div class="grid">${items.map(x=>`<figure>${x}</figure>`).join('')}</div>`:(j.status==='error'?'<span class="err">'+(j.error||'failed')+'</span>':'detecting…');
+    return}
+  if(j.kind==='sheet'){
+    const f=outs.find(o=>/SHEET/.test(o.title||'')||/_SHEET_/.test(o.filename));if(!f)return;S.lastSheet=f;
+    $('#r-sheet').innerHTML=`<h2>Character sheet</h2><img src="${view(f)}"><div class="row" style="margin-top:10px"><button class="sm" id="use-sheet">Use in video swap →</button><a class="sm" style="text-decoration:none;text-align:center" href="${view(f,1)}">Download</a></div>
+      <div class="grid">${outs.filter(o=>o!==f&&o.type==='output').map(o=>`<figure><img src="${view(o)}"><figcaption>${o.title}</figcaption></figure>`).join('')}</div>`;
+    $('#use-sheet').onclick=async()=>{const r=await fetch('/api/use_as_character',{method:'POST',body:JSON.stringify(f)}).then(r=>r.json());
+      S.char={name:r.name};const d=$('#d-char');d.classList.add('has');d.innerHTML=`<img src="${view(f)}"><small>character sheet</small>`;refresh();gotoTab('swap')}
+  }else if(j.kind==='mocap'){
+    const vids=outs.filter(o=>/\.mp4$/i.test(o.filename));const ck=outs.filter(o=>!/\.mp4$/i.test(o.filename));
+    $('#r-swap').innerHTML=`<h2>Motion capture</h2><div class="grid">${vids.map(o=>`<figure><video src="${view(o)}" controls loop muted></video><figcaption><span>${o.title||o.filename}</span><a class="sm" style="color:var(--acc2)" href="${view(o,1)}">save</a></figcaption></figure>`).join('')}</div>`+(ck.length?`<div class="grid">${ck.map(o=>`<figure><img src="${view(o)}"><figcaption>${o.title}</figcaption></figure>`).join('')}</div>`:'');
+  }else{
+    const f=outs.find(o=>/JOINED/.test(o.title||''))||outs.find(o=>/\.(mp4|webm)$/i.test(o.filename));
+    const checks=outs.filter(o=>/^check|SAM3|tracked/i.test(o.title||'')&&!/\.(mp4)$/.test(o.filename));
+    if(f)$('#r-swap').innerHTML=`<h2>Result</h2><video src="${view(f)}" controls autoplay loop></video><div style="margin-top:8px"><a class="sm" style="text-decoration:none" href="${view(f,1)}">Download mp4</a></div>`
+      +(checks.length?`<details><summary>Checks (tracking · skeleton · replace area · raw render)</summary><div class="grid">${checks.map(o=>`<figure><img src="${view(o)}"><figcaption>${o.title}</figcaption></figure>`).join('')}</div></details>`:'');
+    else if(checks.length&&j.status!=='done')$('#r-swap').innerHTML=`<h2>Checks so far</h2><div class="grid">${checks.map(o=>`<figure><img src="${view(o)}"><figcaption>${o.title}</figcaption></figure>`).join('')}</div>`;
+  }
+}
+window.cancel=id=>fetch('/api/cancel/'+id,{method:'POST'});
+const es=new EventSource('/api/events');
+es.onmessage=e=>{const m=JSON.parse(e.data);if(m.type==='job')renderJob(m.job);if(m.type==='comfy')status()};
+fetch('/api/jobs').then(r=>r.json()).then(js=>js.reverse().forEach(renderJob));
+
+
+// ---- podcast slots
+S.slots=0;
+function slotChars(){const o=[];for(let i=0;i<S.slots;i++){const f=S['slot'+i];if(f)o.push({image:f.name,track:$('#sl-t'+i).value,pos:$('#sl-p'+i).value,text:$('#sl-x'+i).value})}return o}
+function addSlot(){
+  const i=S.slots++;const names='ABCD'[i]||i+1;
+  const d=document.createElement('div');d.className='card';d.style.cssText='margin-top:10px;background:var(--panel2)';
+  d.innerHTML=`<b>Person ${names}</b><div class="drop" id="d-slot${i}" data-kind="image" style="margin-top:8px"><span><small>drop character ${names} image</small></span></div>
+   <div class="row" style="margin-top:8px"><div><label style="margin-top:0">ID in video</label><select id="sl-t${i}">${[0,1,2,3].map(n=>`<option ${n===i?'selected':''}>${n}</option>`).join('')}</select></div>
+   <div><label style="margin-top:0">position</label><select id="sl-p${i}"><option value="left" ${i===0?'selected':''}>left</option><option value="right" ${i===1?'selected':''}>right</option><option value="center">center</option><option value="">—</option></select></div></div>
+   <input type="text" id="sl-x${i}" placeholder="who (optional): e.g. host, bearded man in black suit" style="margin-top:8px">`;
+  $('#slots').append(d);setupDrop('#d-slot'+i,'slot'+i,()=>{refresh();upd()});
+  d.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',upd));
+}
+function initSlots(){S.slotsInit=true;addSlot();addSlot()}
+$('#b-addslot').onclick=()=>{if(S.slots<4)addSlot()};
+$('#b-detect').onclick=async()=>{if(!S.video){alert('Upload the source video first');return}
+  $('#people-prev').textContent='detecting…';
+  const r=await fetch('/api/run/people',{method:'POST',body:JSON.stringify({video:S.video.name,params:{start:+$('#w-start').value,person_text:$('#w-ptxt').value||'person'}})}).then(r=>r.json());S.peopleJob=r.id};
+
+async function status(){
+  try{const s=await fetch('/api/status').then(r=>r.json());
+    $('#dot').className='dot'+(s.comfy?' ok':'');$('#comfy').textContent=s.comfy?'ComfyUI connected':'ComfyUI offline — start it first (port 8188)';
+    $('#gpu').textContent=s.gpu?`${s.gpu.replace('NVIDIA GeForce ','')} · ${(s.vram_free/2**30).toFixed(1)}/${(s.vram_total/2**30).toFixed(0)} GB free`:'';
+    $('#missing').innerHTML=s.missing&&s.missing.length?`<div class="warn"><b>Missing models / nodes:</b> ${s.missing.map(m=>`<span class="pill">${m}</span>`).join('')}</div>`:''}
+  catch(e){$('#comfy').textContent='server error'}}
+status();setInterval(status,15000);applyPreset('quality');applyCase('swap');refresh();
+</script>
+</body>
+</html>

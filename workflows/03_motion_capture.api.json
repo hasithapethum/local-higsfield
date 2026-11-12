@@ -1,0 +1,304 @@
+{
+ "1": {
+  "class_type": "VHS_LoadVideo",
+  "inputs": {
+   "video": "source.mp4",
+   "force_rate": 24,
+   "custom_width": 0,
+   "custom_height": 0,
+   "frame_load_cap": 124,
+   "skip_first_frames": 0,
+   "select_every_nth": 1,
+   "format": "H3"
+  },
+  "_meta": {
+   "title": "source video"
+  }
+ },
+ "2": {
+  "class_type": "ImageScaleToTotalPixels",
+  "inputs": {
+   "image": [
+    "1",
+    0
+   ],
+   "upscale_method": "lanczos",
+   "megapixels": 0.6,
+   "resolution_steps": 32
+  },
+  "_meta": {
+   "title": "frames -> output size"
+  }
+ },
+ "3": {
+  "class_type": "GetImageSize",
+  "inputs": {
+   "image": [
+    "2",
+    0
+   ]
+  }
+ },
+ "4": {
+  "class_type": "CheckpointLoaderSimple",
+  "inputs": {
+   "ckpt_name": "sam3.1_multiplex_fp16.safetensors"
+  },
+  "_meta": {
+   "title": "SAM 3.1"
+  }
+ },
+ "5": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "person:1",
+   "clip": [
+    "4",
+    1
+   ]
+  }
+ },
+ "6": {
+  "class_type": "SAM3_VideoTrack",
+  "inputs": {
+   "images": [
+    "2",
+    0
+   ],
+   "model": [
+    "4",
+    0
+   ],
+   "detection_threshold": 0.5,
+   "max_objects": 4,
+   "detect_interval": 1,
+   "conditioning": [
+    "5",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "track"
+  }
+ },
+ "7": {
+  "class_type": "SAM3_TrackToMask",
+  "inputs": {
+   "track_data": [
+    "6",
+    0
+   ],
+   "object_indices": "0"
+  },
+  "_meta": {
+   "title": "mask"
+  }
+ },
+ "8": {
+  "class_type": "EmptyImage",
+  "inputs": {
+   "width": [
+    "3",
+    0
+   ],
+   "height": [
+    "3",
+    1
+   ],
+   "batch_size": 1,
+   "color": 0
+  }
+ },
+ "9": {
+  "class_type": "ImageCompositeMasked",
+  "inputs": {
+   "destination": [
+    "8",
+    0
+   ],
+   "source": [
+    "2",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "resize_source": false,
+   "mask": [
+    "7",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "person only"
+  }
+ },
+ "10": {
+  "class_type": "OnnxDetectionModelLoader",
+  "inputs": {
+   "vitpose_model": "vitpose-l-wholebody.onnx",
+   "yolo_model": "yolov10m.onnx",
+   "onnx_device": "CUDAExecutionProvider"
+  },
+  "_meta": {
+   "title": "ViTPose-L + YOLO"
+  }
+ },
+ "11": {
+  "class_type": "PoseAndFaceDetection",
+  "inputs": {
+   "model": [
+    "10",
+    0
+   ],
+   "images": [
+    "9",
+    0
+   ],
+   "width": [
+    "3",
+    0
+   ],
+   "height": [
+    "3",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "pose"
+  }
+ },
+ "12": {
+  "class_type": "DrawViTPose",
+  "inputs": {
+   "pose_data": [
+    "11",
+    0
+   ],
+   "width": [
+    "3",
+    0
+   ],
+   "height": [
+    "3",
+    1
+   ],
+   "retarget_padding": 0,
+   "body_stick_width": -1,
+   "hand_stick_width": -1,
+   "draw_head": true
+  },
+  "_meta": {
+   "title": "skeleton"
+  }
+ },
+ "13": {
+  "class_type": "VHS_VideoCombine",
+  "inputs": {
+   "images": [
+    "12",
+    0
+   ],
+   "frame_rate": 24,
+   "loop_count": 0,
+   "filename_prefix": "H3Studio/mocap_skeleton",
+   "format": "video/h264-mp4",
+   "pingpong": false,
+   "save_output": true
+  },
+  "_meta": {
+   "title": "\u2605 skeleton video"
+  }
+ },
+ "14": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "7",
+    0
+   ]
+  }
+ },
+ "15": {
+  "class_type": "VHS_VideoCombine",
+  "inputs": {
+   "images": [
+    "14",
+    0
+   ],
+   "frame_rate": 24,
+   "loop_count": 0,
+   "filename_prefix": "H3Studio/mocap_mask",
+   "format": "video/h264-mp4",
+   "pingpong": false,
+   "save_output": true
+  },
+  "_meta": {
+   "title": "\u2605 mask video"
+  }
+ },
+ "16": {
+  "class_type": "DepthAnythingV2Preprocessor",
+  "inputs": {
+   "image": [
+    "2",
+    0
+   ],
+   "ckpt_name": "depth_anything_v2_vitl.pth",
+   "resolution": 768
+  },
+  "_meta": {
+   "title": "depth"
+  }
+ },
+ "17": {
+  "class_type": "ImageScale",
+  "inputs": {
+   "image": [
+    "16",
+    0
+   ],
+   "upscale_method": "bilinear",
+   "width": [
+    "3",
+    0
+   ],
+   "height": [
+    "3",
+    1
+   ],
+   "crop": "disabled"
+  }
+ },
+ "18": {
+  "class_type": "VHS_VideoCombine",
+  "inputs": {
+   "images": [
+    "17",
+    0
+   ],
+   "frame_rate": 24,
+   "loop_count": 0,
+   "filename_prefix": "H3Studio/mocap_depth",
+   "format": "video/h264-mp4",
+   "pingpong": false,
+   "save_output": true
+  },
+  "_meta": {
+   "title": "\u2605 depth video"
+  }
+ },
+ "19": {
+  "class_type": "SAM3_TrackPreview",
+  "inputs": {
+   "track_data": [
+    "6",
+    0
+   ],
+   "opacity": 0.5,
+   "fps": 24.0
+  },
+  "_meta": {
+   "title": "check: tracked people"
+  }
+ }
+}
