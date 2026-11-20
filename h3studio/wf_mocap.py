@@ -7,24 +7,23 @@ Extracts, from a video, everything the swap workflow uses as 'motion':
 and saves each as an mp4 so you can inspect, reuse or feed them to other tools.
 """
 from graph import Graph
-from wf_h3swap import SAM3, frames_for
+from wf_h3swap import SAM3, real_frames
 
 
-def build(video, seconds=5.0, start=0.0, megapixels=0.6, subject_text="person", index="0", depth=True,
+def build(video, seconds=5.0, start=0.0, megapixels=0.6, subject_text="people", index="0", depth=True,
           prefix="H3Studio/mocap", oi=None):
     g = Graph(oi)
     G = "MOTION CAPTURE"
-    frames = frames_for(seconds)
+    frames = real_frames(seconds)      # exactly the selected range (output length == input length)
     vid = g.add("VHS_LoadVideo", "source video", G, video=video, force_rate=24, custom_width=0, custom_height=0,
-                frame_load_cap=frames, skip_first_frames=round(start * 24), select_every_nth=1, format="H3")
+                frame_load_cap=frames, skip_first_frames=round(start * 24), select_every_nth=1, format="None")
     fr = g.add("ImageScaleToTotalPixels", "frames -> output size", G, image=vid[0], upscale_method="lanczos",
                megapixels=megapixels, resolution_steps=32)
     size = g.add("GetImageSize", None, G, image=fr[0])
     sam = g.add("CheckpointLoaderSimple", "SAM 3.1", G, ckpt_name=SAM3)
-    t = g.add("CLIPTextEncode", None, G, text=subject_text + ":1", clip=sam[1])
-    trk = g.add("SAM3_VideoTrack", "track", G, images=fr[0], model=sam[0], detection_threshold=0.5, max_objects=4,
-                detect_interval=1, conditioning=t[0])
-    pm = g.add("SAM3_TrackToMask", "mask", G, track_data=trk[0], object_indices=index)
+    import wf_track
+    T = wf_track.track_people(g, G, fr, sam, [dict(track=index)], subject_text)
+    trk, pm = T["track"], T["masks"][0]
     black = g.add("EmptyImage", None, G, width=size[0], height=size[1], batch_size=1, color=0)
     pimg = g.add("ImageCompositeMasked", "person only", G, destination=black[0], source=fr[0], x=0, y=0,
                  resize_source=False, mask=pm[0])

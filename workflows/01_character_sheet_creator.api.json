@@ -88,13 +88,92 @@
   }
  },
  "9": {
+  "class_type": "CheckpointLoaderSimple",
+  "inputs": {
+   "ckpt_name": "sam3.1_multiplex_fp16.safetensors"
+  },
+  "_meta": {
+   "title": "SAM 3.1 (face finder)"
+  }
+ },
+ "10": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "face:1",
+   "clip": [
+    "9",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "detect face"
+  }
+ },
+ "11": {
+  "class_type": "SAM3_Detect",
+  "inputs": {
+   "model": [
+    "9",
+    0
+   ],
+   "image": [
+    "2",
+    0
+   ],
+   "threshold": 0.3,
+   "refine_iterations": 1,
+   "individual_masks": false,
+   "conditioning": [
+    "10",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "SAM3: face box in YOUR photo"
+  }
+ },
+ "12": {
+  "class_type": "CropByBBoxes",
+  "inputs": {
+   "image": [
+    "2",
+    0
+   ],
+   "bboxes": [
+    "11",
+    1
+   ],
+   "output_width": 768,
+   "output_height": 768,
+   "padding": 64,
+   "keep_aspect": "pad"
+  },
+  "_meta": {
+   "title": "real face crop"
+  }
+ },
+ "13": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "12",
+    0
+   ],
+   "batch_index": 0,
+   "length": 1
+  },
+  "_meta": {
+   "title": "face crop (first)"
+  }
+ },
+ "14": {
   "class_type": "TextEncodeQwenImageEditPlus",
   "inputs": {
    "clip": [
     "4",
     0
    ],
-   "prompt": "Redraw the exact same person from the reference image as a full-body front view, standing straight, facing the camera, arms relaxed at the sides, neutral expression. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark.",
+   "prompt": "Redraw the exact same person from the reference image as a full-body front view, standing straight, facing the camera, arms relaxed at the sides, neutral expression. Keep identical face, facial features, skin tone, hairstyle and hair color, facial hair, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). plain seamless solid neutral medium-gray (#808080) studio backdrop, soft even lighting, no shadows on the backdrop, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark.",
    "vae": [
     "5",
     0
@@ -108,16 +187,16 @@
    "title": "prompt: front"
   }
  },
- "10": {
+ "15": {
   "class_type": "ConditioningZeroOut",
   "inputs": {
    "conditioning": [
-    "9",
+    "14",
     0
    ]
   }
  },
- "11": {
+ "16": {
   "class_type": "EmptySD3LatentImage",
   "inputs": {
    "width": 832,
@@ -125,7 +204,7 @@
    "batch_size": 1
   }
  },
- "12": {
+ "17": {
   "class_type": "KSampler",
   "inputs": {
    "model": [
@@ -138,15 +217,15 @@
    "sampler_name": "euler",
    "scheduler": "simple",
    "positive": [
-    "9",
+    "14",
     0
    ],
    "negative": [
-    "10",
+    "15",
     0
    ],
    "latent_image": [
-    "11",
+    "16",
     0
    ],
    "denoise": 1.0
@@ -155,11 +234,11 @@
    "title": "sample: front"
   }
  },
- "13": {
+ "18": {
   "class_type": "VAEDecode",
   "inputs": {
    "samples": [
-    "12",
+    "17",
     0
    ],
    "vae": [
@@ -168,11 +247,11 @@
    ]
   }
  },
- "14": {
+ "19": {
   "class_type": "SaveImage",
   "inputs": {
    "images": [
-    "13",
+    "18",
     0
    ],
    "filename_prefix": "H3Studio/charsheet_front"
@@ -181,11 +260,11 @@
    "title": "save front"
   }
  },
- "15": {
+ "20": {
   "class_type": "ImageScaleToTotalPixels",
   "inputs": {
    "image": [
-    "13",
+    "18",
     0
    ],
    "upscale_method": "lanczos",
@@ -196,24 +275,24 @@
    "title": "anchor ~1MP"
   }
  },
- "16": {
+ "21": {
   "class_type": "TextEncodeQwenImageEditPlus",
   "inputs": {
    "clip": [
     "4",
     0
    ],
-   "prompt": "Redraw the exact same person from the reference image as a full-body three-quarter view (body turned 45 degrees to the left), standing, neutral expression. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both.",
+   "prompt": "Redraw the exact same person from the reference image as a full-body three-quarter view: the whole body and head clearly rotated 45 degrees to the subject's left so one shoulder is nearer the camera, standing, neutral expression. Keep identical face, facial features, skin tone, hairstyle and hair color, facial hair, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). plain seamless solid neutral medium-gray (#808080) studio backdrop, soft even lighting, no shadows on the backdrop, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the original photo of the subject - it is the ground truth for identity, face, hair, outfit and proportions. Image 2 is the same subject already cleaned on the backdrop; use it only for framing.",
    "vae": [
     "5",
     0
    ],
    "image1": [
-    "15",
+    "2",
     0
    ],
    "image2": [
-    "2",
+    "20",
     0
    ]
   },
@@ -221,16 +300,16 @@
    "title": "prompt: three_quarter"
   }
  },
- "17": {
+ "22": {
   "class_type": "ConditioningZeroOut",
   "inputs": {
    "conditioning": [
-    "16",
+    "21",
     0
    ]
   }
  },
- "18": {
+ "23": {
   "class_type": "EmptySD3LatentImage",
   "inputs": {
    "width": 832,
@@ -238,7 +317,7 @@
    "batch_size": 1
   }
  },
- "19": {
+ "24": {
   "class_type": "KSampler",
   "inputs": {
    "model": [
@@ -251,15 +330,15 @@
    "sampler_name": "euler",
    "scheduler": "simple",
    "positive": [
-    "16",
+    "21",
     0
    ],
    "negative": [
-    "17",
+    "22",
     0
    ],
    "latent_image": [
-    "18",
+    "23",
     0
    ],
    "denoise": 1.0
@@ -268,11 +347,11 @@
    "title": "sample: three_quarter"
   }
  },
- "20": {
+ "25": {
   "class_type": "VAEDecode",
   "inputs": {
    "samples": [
-    "19",
+    "24",
     0
    ],
    "vae": [
@@ -281,11 +360,11 @@
    ]
   }
  },
- "21": {
+ "26": {
   "class_type": "SaveImage",
   "inputs": {
    "images": [
-    "20",
+    "25",
     0
    ],
    "filename_prefix": "H3Studio/charsheet_three_quarter"
@@ -294,24 +373,24 @@
    "title": "save three_quarter"
   }
  },
- "22": {
+ "27": {
   "class_type": "TextEncodeQwenImageEditPlus",
   "inputs": {
    "clip": [
     "4",
     0
    ],
-   "prompt": "Redraw the exact same person from the reference image as a full-body side profile view facing left (90 degrees), standing straight, arms relaxed. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both.",
+   "prompt": "Redraw the exact same person from the reference image as a full-body side profile view facing left (90 degrees), standing straight, arms relaxed. Keep identical face, facial features, skin tone, hairstyle and hair color, facial hair, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). plain seamless solid neutral medium-gray (#808080) studio backdrop, soft even lighting, no shadows on the backdrop, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the original photo of the subject - it is the ground truth for identity, face, hair, outfit and proportions. Image 2 is the same subject already cleaned on the backdrop; use it only for framing.",
    "vae": [
     "5",
     0
    ],
    "image1": [
-    "15",
+    "2",
     0
    ],
    "image2": [
-    "2",
+    "20",
     0
    ]
   },
@@ -319,16 +398,16 @@
    "title": "prompt: side"
   }
  },
- "23": {
+ "28": {
   "class_type": "ConditioningZeroOut",
   "inputs": {
    "conditioning": [
-    "22",
+    "27",
     0
    ]
   }
  },
- "24": {
+ "29": {
   "class_type": "EmptySD3LatentImage",
   "inputs": {
    "width": 832,
@@ -336,7 +415,7 @@
    "batch_size": 1
   }
  },
- "25": {
+ "30": {
   "class_type": "KSampler",
   "inputs": {
    "model": [
@@ -349,15 +428,15 @@
    "sampler_name": "euler",
    "scheduler": "simple",
    "positive": [
-    "22",
+    "27",
     0
    ],
    "negative": [
-    "23",
+    "28",
     0
    ],
    "latent_image": [
-    "24",
+    "29",
     0
    ],
    "denoise": 1.0
@@ -366,11 +445,11 @@
    "title": "sample: side"
   }
  },
- "26": {
+ "31": {
   "class_type": "VAEDecode",
   "inputs": {
    "samples": [
-    "25",
+    "30",
     0
    ],
    "vae": [
@@ -379,11 +458,11 @@
    ]
   }
  },
- "27": {
+ "32": {
   "class_type": "SaveImage",
   "inputs": {
    "images": [
-    "26",
+    "31",
     0
    ],
    "filename_prefix": "H3Studio/charsheet_side"
@@ -392,24 +471,24 @@
    "title": "save side"
   }
  },
- "28": {
+ "33": {
   "class_type": "TextEncodeQwenImageEditPlus",
   "inputs": {
    "clip": [
     "4",
     0
    ],
-   "prompt": "Redraw the exact same person from the reference image as a full-body rear view, seen from directly behind, standing straight, arms relaxed at the sides. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both.",
+   "prompt": "Redraw the exact same person from the reference image as a full-body rear view, seen from directly behind, standing straight, arms relaxed at the sides. Keep identical face, facial features, skin tone, hairstyle and hair color, facial hair, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). plain seamless solid neutral medium-gray (#808080) studio backdrop, soft even lighting, no shadows on the backdrop, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the original photo of the subject - it is the ground truth for identity, face, hair, outfit and proportions. Image 2 is the same subject already cleaned on the backdrop; use it only for framing.",
    "vae": [
     "5",
     0
    ],
    "image1": [
-    "15",
+    "2",
     0
    ],
    "image2": [
-    "2",
+    "20",
     0
    ]
   },
@@ -417,16 +496,16 @@
    "title": "prompt: back"
   }
  },
- "29": {
+ "34": {
   "class_type": "ConditioningZeroOut",
   "inputs": {
    "conditioning": [
-    "28",
+    "33",
     0
    ]
   }
  },
- "30": {
+ "35": {
   "class_type": "EmptySD3LatentImage",
   "inputs": {
    "width": 832,
@@ -434,7 +513,7 @@
    "batch_size": 1
   }
  },
- "31": {
+ "36": {
   "class_type": "KSampler",
   "inputs": {
    "model": [
@@ -447,15 +526,15 @@
    "sampler_name": "euler",
    "scheduler": "simple",
    "positive": [
-    "28",
+    "33",
     0
    ],
    "negative": [
-    "29",
+    "34",
     0
    ],
    "latent_image": [
-    "30",
+    "35",
     0
    ],
    "denoise": 1.0
@@ -464,11 +543,11 @@
    "title": "sample: back"
   }
  },
- "32": {
+ "37": {
   "class_type": "VAEDecode",
   "inputs": {
    "samples": [
-    "31",
+    "36",
     0
    ],
    "vae": [
@@ -477,11 +556,11 @@
    ]
   }
  },
- "33": {
+ "38": {
   "class_type": "SaveImage",
   "inputs": {
    "images": [
-    "32",
+    "37",
     0
    ],
    "filename_prefix": "H3Studio/charsheet_back"
@@ -490,20 +569,20 @@
    "title": "save back"
   }
  },
- "34": {
+ "39": {
   "class_type": "TextEncodeQwenImageEditPlus",
   "inputs": {
    "clip": [
     "4",
     0
    ],
-   "prompt": "Redraw the exact same person from the reference image as a sharp head-and-shoulders face close-up portrait, facing the camera, neutral expression, even soft lighting. Keep identical face, facial features, skin tone, hairstyle and hair color, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). Plain seamless pure white studio background, soft even lighting, no shadows on the background, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is the already-cleaned front view; image 2 is the original photo for exact detail. Keep the identity identical to both.",
+   "prompt": "Redraw the exact same person from the reference image as a sharp head-and-shoulders face close-up portrait, facing the camera, neutral expression, even soft lighting. Keep identical face, facial features, skin tone, hairstyle and hair color, facial hair, body build and proportions, and exactly the same outfit, shoes and accessories (keep what they are wearing in the reference). plain seamless solid neutral medium-gray (#808080) studio backdrop, soft even lighting, no shadows on the backdrop, photorealistic, sharp focus, full detail, character reference sheet, no text, no watermark. Image 1 is a close-up crop of the real face - reproduce exactly this face, skin texture, beard / facial hair and hairstyle. Image 2 is the full photo for context.",
    "vae": [
     "5",
     0
    ],
    "image1": [
-    "15",
+    "13",
     0
    ],
    "image2": [
@@ -515,16 +594,16 @@
    "title": "prompt: face"
   }
  },
- "35": {
+ "40": {
   "class_type": "ConditioningZeroOut",
   "inputs": {
    "conditioning": [
-    "34",
+    "39",
     0
    ]
   }
  },
- "36": {
+ "41": {
   "class_type": "EmptySD3LatentImage",
   "inputs": {
    "width": 1024,
@@ -532,7 +611,7 @@
    "batch_size": 1
   }
  },
- "37": {
+ "42": {
   "class_type": "KSampler",
   "inputs": {
    "model": [
@@ -545,15 +624,15 @@
    "sampler_name": "euler",
    "scheduler": "simple",
    "positive": [
-    "34",
+    "39",
     0
    ],
    "negative": [
-    "35",
+    "40",
     0
    ],
    "latent_image": [
-    "36",
+    "41",
     0
    ],
    "denoise": 1.0
@@ -562,101 +641,17 @@
    "title": "sample: face"
   }
  },
- "38": {
+ "43": {
   "class_type": "VAEDecode",
   "inputs": {
    "samples": [
-    "37",
+    "42",
     0
    ],
    "vae": [
     "5",
     0
    ]
-  }
- },
- "39": {
-  "class_type": "SaveImage",
-  "inputs": {
-   "images": [
-    "38",
-    0
-   ],
-   "filename_prefix": "H3Studio/charsheet_face"
-  },
-  "_meta": {
-   "title": "save face"
-  }
- },
- "40": {
-  "class_type": "ImageStitch",
-  "inputs": {
-   "image1": [
-    "13",
-    0
-   ],
-   "direction": "right",
-   "match_image_size": true,
-   "spacing_width": 0,
-   "spacing_color": "white",
-   "image2": [
-    "20",
-    0
-   ]
-  }
- },
- "41": {
-  "class_type": "ImageStitch",
-  "inputs": {
-   "image1": [
-    "40",
-    0
-   ],
-   "direction": "right",
-   "match_image_size": true,
-   "spacing_width": 0,
-   "spacing_color": "white",
-   "image2": [
-    "26",
-    0
-   ]
-  }
- },
- "42": {
-  "class_type": "ImageStitch",
-  "inputs": {
-   "image1": [
-    "41",
-    0
-   ],
-   "direction": "right",
-   "match_image_size": true,
-   "spacing_width": 0,
-   "spacing_color": "white",
-   "image2": [
-    "32",
-    0
-   ]
-  }
- },
- "43": {
-  "class_type": "ImageStitch",
-  "inputs": {
-   "image1": [
-    "42",
-    0
-   ],
-   "direction": "right",
-   "match_image_size": true,
-   "spacing_width": 0,
-   "spacing_color": "white",
-   "image2": [
-    "38",
-    0
-   ]
-  },
-  "_meta": {
-   "title": "sheet = bodies | face"
   }
  },
  "44": {
@@ -666,17 +661,101 @@
     "43",
     0
    ],
+   "filename_prefix": "H3Studio/charsheet_face"
+  },
+  "_meta": {
+   "title": "save face"
+  }
+ },
+ "45": {
+  "class_type": "ImageStitch",
+  "inputs": {
+   "image1": [
+    "18",
+    0
+   ],
+   "direction": "right",
+   "match_image_size": true,
+   "spacing_width": 0,
+   "spacing_color": "white",
+   "image2": [
+    "25",
+    0
+   ]
+  }
+ },
+ "46": {
+  "class_type": "ImageStitch",
+  "inputs": {
+   "image1": [
+    "45",
+    0
+   ],
+   "direction": "right",
+   "match_image_size": true,
+   "spacing_width": 0,
+   "spacing_color": "white",
+   "image2": [
+    "31",
+    0
+   ]
+  }
+ },
+ "47": {
+  "class_type": "ImageStitch",
+  "inputs": {
+   "image1": [
+    "46",
+    0
+   ],
+   "direction": "right",
+   "match_image_size": true,
+   "spacing_width": 0,
+   "spacing_color": "white",
+   "image2": [
+    "37",
+    0
+   ]
+  }
+ },
+ "48": {
+  "class_type": "ImageStitch",
+  "inputs": {
+   "image1": [
+    "47",
+    0
+   ],
+   "direction": "right",
+   "match_image_size": true,
+   "spacing_width": 0,
+   "spacing_color": "white",
+   "image2": [
+    "43",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "sheet = bodies | face"
+  }
+ },
+ "49": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "48",
+    0
+   ],
    "filename_prefix": "H3Studio/charsheet_SHEET"
   },
   "_meta": {
    "title": "\u2605 CHARACTER SHEET"
   }
  },
- "45": {
+ "50": {
   "class_type": "PreviewImage",
   "inputs": {
    "images": [
-    "43",
+    "48",
     0
    ]
   },

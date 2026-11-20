@@ -6,10 +6,10 @@
    "force_rate": 24,
    "custom_width": 0,
    "custom_height": 0,
-   "frame_load_cap": 124,
+   "frame_load_cap": 120,
    "skip_first_frames": 0,
    "select_every_nth": 1,
-   "format": "H3"
+   "format": "None"
   },
   "_meta": {
    "title": "source video"
@@ -49,16 +49,70 @@
   }
  },
  "5": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "2",
+    0
+   ],
+   "batch_index": 0,
+   "length": 1
+  },
+  "_meta": {
+   "title": "first frame"
+  }
+ },
+ "6": {
   "class_type": "CLIPTextEncode",
   "inputs": {
-   "text": "person:1",
+   "text": "people:1",
    "clip": [
     "4",
     1
    ]
+  },
+  "_meta": {
+   "title": "detect people in first frame"
   }
  },
- "6": {
+ "7": {
+  "class_type": "SAM3_Detect",
+  "inputs": {
+   "model": [
+    "4",
+    0
+   ],
+   "image": [
+    "5",
+    0
+   ],
+   "threshold": 0.25,
+   "refine_iterations": 2,
+   "individual_masks": true,
+   "conditioning": [
+    "6",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "SAM3: seed (first frame, one mask per person, best first)"
+  }
+ },
+ "8": {
+  "class_type": "MaskFromBatch+",
+  "inputs": {
+   "mask": [
+    "7",
+    0
+   ],
+   "start": 0,
+   "length": 1
+  },
+  "_meta": {
+   "title": "person #0"
+  }
+ },
+ "9": {
   "class_type": "SAM3_VideoTrack",
   "inputs": {
    "images": [
@@ -69,32 +123,32 @@
     "4",
     0
    ],
-   "detection_threshold": 0.5,
-   "max_objects": 4,
-   "detect_interval": 1,
-   "conditioning": [
-    "5",
+   "initial_mask": [
+    "8",
     0
-   ]
+   ],
+   "max_objects": 1,
+   "detect_interval": 1,
+   "detection_threshold": 0.25
   },
   "_meta": {
-   "title": "track"
+   "title": "SAM3 tracking (seeded, memory only: cannot lose the person)"
   }
  },
- "7": {
+ "10": {
   "class_type": "SAM3_TrackToMask",
   "inputs": {
    "track_data": [
-    "6",
+    "9",
     0
    ],
    "object_indices": "0"
   },
   "_meta": {
-   "title": "mask"
+   "title": "tracked person -> mask"
   }
  },
- "8": {
+ "11": {
   "class_type": "EmptyImage",
   "inputs": {
    "width": [
@@ -109,11 +163,11 @@
    "color": 0
   }
  },
- "9": {
+ "12": {
   "class_type": "ImageCompositeMasked",
   "inputs": {
    "destination": [
-    "8",
+    "11",
     0
    ],
    "source": [
@@ -124,7 +178,7 @@
    "y": 0,
    "resize_source": false,
    "mask": [
-    "7",
+    "10",
     0
    ]
   },
@@ -132,7 +186,7 @@
    "title": "person only"
   }
  },
- "10": {
+ "13": {
   "class_type": "OnnxDetectionModelLoader",
   "inputs": {
    "vitpose_model": "vitpose-l-wholebody.onnx",
@@ -143,15 +197,15 @@
    "title": "ViTPose-L + YOLO"
   }
  },
- "11": {
+ "14": {
   "class_type": "PoseAndFaceDetection",
   "inputs": {
    "model": [
-    "10",
+    "13",
     0
    ],
    "images": [
-    "9",
+    "12",
     0
    ],
    "width": [
@@ -167,11 +221,11 @@
    "title": "pose"
   }
  },
- "12": {
+ "15": {
   "class_type": "DrawViTPose",
   "inputs": {
    "pose_data": [
-    "11",
+    "14",
     0
    ],
    "width": [
@@ -191,11 +245,11 @@
    "title": "skeleton"
   }
  },
- "13": {
+ "16": {
   "class_type": "VHS_VideoCombine",
   "inputs": {
    "images": [
-    "12",
+    "15",
     0
    ],
    "frame_rate": 24,
@@ -209,20 +263,20 @@
    "title": "\u2605 skeleton video"
   }
  },
- "14": {
+ "17": {
   "class_type": "MaskToImage",
   "inputs": {
    "mask": [
-    "7",
+    "10",
     0
    ]
   }
  },
- "15": {
+ "18": {
   "class_type": "VHS_VideoCombine",
   "inputs": {
    "images": [
-    "14",
+    "17",
     0
    ],
    "frame_rate": 24,
@@ -236,7 +290,7 @@
    "title": "\u2605 mask video"
   }
  },
- "16": {
+ "19": {
   "class_type": "DepthAnythingV2Preprocessor",
   "inputs": {
    "image": [
@@ -250,11 +304,11 @@
    "title": "depth"
   }
  },
- "17": {
+ "20": {
   "class_type": "ImageScale",
   "inputs": {
    "image": [
-    "16",
+    "19",
     0
    ],
    "upscale_method": "bilinear",
@@ -269,11 +323,11 @@
    "crop": "disabled"
   }
  },
- "18": {
+ "21": {
   "class_type": "VHS_VideoCombine",
   "inputs": {
    "images": [
-    "17",
+    "20",
     0
    ],
    "frame_rate": 24,
@@ -287,11 +341,11 @@
    "title": "\u2605 depth video"
   }
  },
- "19": {
+ "22": {
   "class_type": "SAM3_TrackPreview",
   "inputs": {
    "track_data": [
-    "6",
+    "9",
     0
    ],
    "opacity": 0.5,

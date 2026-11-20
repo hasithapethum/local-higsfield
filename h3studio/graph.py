@@ -8,7 +8,7 @@ Node signatures are read from the live ComfyUI (/object_info) so widget order an
 link slot types always match what is installed.  The object_info cache is stored in
 h3studio/object_info.json so the generators also work when ComfyUI is offline.
 """
-import json, os, urllib.request
+import functools, json, os, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OI_CACHE = os.path.join(HERE, "object_info.json")
@@ -48,6 +48,7 @@ class Node:
         self.mode = 0                   # 0 normal, 2 muted, 4 bypassed
         self.ui_widgets = None          # raw override for widgets_values
         self.size = None
+        self.tag = getattr(g, "tag", None)      # time-breakdown category of the helper that added it (see tagged)
 
     def __getitem__(self, slot):
         return Ref(self, slot)
@@ -57,6 +58,27 @@ class Node:
         return Ref(self, 0)
 
 
+def tagged(label):
+    """Decorator for graph-building helpers whose first argument is the Graph: every node added while the helper runs gets
+    node.tag = label (H3 Studio's time breakdown, jobprof.py, groups node times by it - e.g. the SAM3_Detect nodes of the
+    colour fix count as "colour fix", not as "SAM3 detection").  Nested helpers: the innermost label wins.  The tag never
+    reaches the API prompt or the editor file."""
+    def deco(fn):
+        @functools.wraps(fn)
+        def wrap(g, *a, **k):
+            old = getattr(g, "tag", None)
+            try:
+                g.tag = label
+            except Exception:          # not a Graph (no attribute support): run untagged
+                return fn(g, *a, **k)
+            try:
+                return fn(g, *a, **k)
+            finally:
+                g.tag = old
+        return wrap
+    return deco
+
+
 class Graph:
     def __init__(self, oi=None):
         self.oi = oi or load_object_info()
@@ -64,6 +86,7 @@ class Graph:
         self.groups = []     # (title, color)
         self.notes = []
         self._id = 0
+        self.tag = None      # current helper tag (tagged)
 
     def add(self, ctype, title=None, group=None, ncolor=None, **inputs):
         if ctype not in self.oi:

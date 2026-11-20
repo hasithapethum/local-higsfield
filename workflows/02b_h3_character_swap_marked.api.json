@@ -1,0 +1,2135 @@
+{
+ "1": {
+  "class_type": "VHS_LoadVideo",
+  "inputs": {
+   "video": "source.mp4",
+   "force_rate": 24,
+   "custom_width": 0,
+   "custom_height": 0,
+   "frame_load_cap": 120,
+   "skip_first_frames": 0,
+   "select_every_nth": 1,
+   "format": "None"
+  },
+  "_meta": {
+   "title": "\u2460 SOURCE VIDEO (24 fps)"
+  }
+ },
+ "2": {
+  "class_type": "ImageScaleToTotalPixels",
+  "inputs": {
+   "image": [
+    "1",
+    0
+   ],
+   "upscale_method": "lanczos",
+   "megapixels": 0.6,
+   "resolution_steps": 32
+  },
+  "_meta": {
+   "title": "source frames -> output size (/32 grid)"
+  }
+ },
+ "3": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "2",
+    0
+   ],
+   "batch_index": 119,
+   "length": 1
+  },
+  "_meta": {
+   "title": "last source frame"
+  }
+ },
+ "4": {
+  "class_type": "RepeatImageBatch",
+  "inputs": {
+   "image": [
+    "3",
+    0
+   ],
+   "amount": 52
+  },
+  "_meta": {
+   "title": "pad to the 17k+5 grid"
+  }
+ },
+ "5": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "2",
+    0
+   ],
+   "image2": [
+    "4",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "source + padding"
+  }
+ },
+ "6": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "5",
+    0
+   ],
+   "batch_index": 0,
+   "length": 124
+  },
+  "_meta": {
+   "title": "exactly 17k+5 frames at the output size"
+  }
+ },
+ "7": {
+  "class_type": "GetImageSize",
+  "inputs": {
+   "image": [
+    "6",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "output size"
+  }
+ },
+ "8": {
+  "class_type": "TrimAudioDuration",
+  "inputs": {
+   "audio": [
+    "1",
+    2
+   ],
+   "start_index": 0.0,
+   "duration": 5.0
+  },
+  "_meta": {
+   "title": "source audio -> clip length"
+  }
+ },
+ "9": {
+  "class_type": "CheckpointLoaderSimple",
+  "inputs": {
+   "ckpt_name": "sam3.1_multiplex_fp16.safetensors"
+  },
+  "_meta": {
+   "title": "SAM 3.1 loader"
+  }
+ },
+ "10": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "6",
+    0
+   ],
+   "batch_index": 0,
+   "length": 1
+  },
+  "_meta": {
+   "title": "first frame"
+  }
+ },
+ "11": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "people:2",
+   "clip": [
+    "9",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "detect people in first frame"
+  }
+ },
+ "12": {
+  "class_type": "SAM3_Detect",
+  "inputs": {
+   "model": [
+    "9",
+    0
+   ],
+   "image": [
+    "10",
+    0
+   ],
+   "threshold": 0.25,
+   "refine_iterations": 2,
+   "individual_masks": true,
+   "conditioning": [
+    "11",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "SAM3: seed (first frame, one mask per person, best first)"
+  }
+ },
+ "13": {
+  "class_type": "MaskFromBatch+",
+  "inputs": {
+   "mask": [
+    "12",
+    0
+   ],
+   "start": 0,
+   "length": 1
+  },
+  "_meta": {
+   "title": "person #0"
+  }
+ },
+ "14": {
+  "class_type": "MaskFromBatch+",
+  "inputs": {
+   "mask": [
+    "12",
+    0
+   ],
+   "start": 1,
+   "length": 1
+  },
+  "_meta": {
+   "title": "person #1"
+  }
+ },
+ "15": {
+  "class_type": "MaskBatch+",
+  "inputs": {
+   "mask1": [
+    "13",
+    0
+   ],
+   "mask2": [
+    "14",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "seeds of all characters"
+  }
+ },
+ "16": {
+  "class_type": "SAM3_VideoTrack",
+  "inputs": {
+   "images": [
+    "6",
+    0
+   ],
+   "model": [
+    "9",
+    0
+   ],
+   "initial_mask": [
+    "15",
+    0
+   ],
+   "max_objects": 2,
+   "detect_interval": 1,
+   "detection_threshold": 0.25
+  },
+  "_meta": {
+   "title": "SAM3 tracking (seeded, memory only: cannot lose the person)"
+  }
+ },
+ "17": {
+  "class_type": "SAM3_TrackToMask",
+  "inputs": {
+   "track_data": [
+    "16",
+    0
+   ],
+   "object_indices": "0"
+  },
+  "_meta": {
+   "title": "character 1 -> mask"
+  }
+ },
+ "18": {
+  "class_type": "SAM3_TrackToMask",
+  "inputs": {
+   "track_data": [
+    "16",
+    0
+   ],
+   "object_indices": "1"
+  },
+  "_meta": {
+   "title": "character 2 -> mask"
+  }
+ },
+ "19": {
+  "class_type": "BAE-NormalMapPreprocessor",
+  "inputs": {
+   "image": [
+    "6",
+    0
+   ],
+   "resolution": 1024
+  },
+  "_meta": {
+   "title": "BAE normal map (approximate)"
+  }
+ },
+ "20": {
+  "class_type": "ImageScale",
+  "inputs": {
+   "image": [
+    "19",
+    0
+   ],
+   "upscale_method": "bilinear",
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ],
+   "crop": "disabled"
+  },
+  "_meta": {
+   "title": "normals -> output size"
+  }
+ },
+ "21": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "20",
+    0
+   ],
+   "channel": "red"
+  },
+  "_meta": {
+   "title": "normal red"
+  }
+ },
+ "22": {
+  "class_type": "SolidMask",
+  "inputs": {
+   "value": 0.299,
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "weight 0.299"
+  }
+ },
+ "23": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "21",
+    0
+   ],
+   "source": [
+    "22",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "multiply"
+  },
+  "_meta": {
+   "title": "red x 0.299"
+  }
+ },
+ "24": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "20",
+    0
+   ],
+   "channel": "green"
+  },
+  "_meta": {
+   "title": "normal green"
+  }
+ },
+ "25": {
+  "class_type": "InvertMask",
+  "inputs": {
+   "mask": [
+    "24",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "flip green"
+  }
+ },
+ "26": {
+  "class_type": "SolidMask",
+  "inputs": {
+   "value": 0.587,
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "weight 0.587"
+  }
+ },
+ "27": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "25",
+    0
+   ],
+   "source": [
+    "26",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "multiply"
+  },
+  "_meta": {
+   "title": "green x 0.587"
+  }
+ },
+ "28": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "20",
+    0
+   ],
+   "channel": "blue"
+  },
+  "_meta": {
+   "title": "normal blue"
+  }
+ },
+ "29": {
+  "class_type": "InvertMask",
+  "inputs": {
+   "mask": [
+    "28",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "flip blue"
+  }
+ },
+ "30": {
+  "class_type": "SolidMask",
+  "inputs": {
+   "value": 0.114,
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "weight 0.114"
+  }
+ },
+ "31": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "29",
+    0
+   ],
+   "source": [
+    "30",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "multiply"
+  },
+  "_meta": {
+   "title": "blue x 0.114"
+  }
+ },
+ "32": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "23",
+    0
+   ],
+   "source": [
+    "27",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "add"
+  },
+  "_meta": {
+   "title": "R + G"
+  }
+ },
+ "33": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "32",
+    0
+   ],
+   "source": [
+    "31",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "add"
+  },
+  "_meta": {
+   "title": "luminance of normals"
+  }
+ },
+ "34": {
+  "class_type": "SolidMask",
+  "inputs": {
+   "value": 0.75,
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "0.75"
+  }
+ },
+ "35": {
+  "class_type": "SolidMask",
+  "inputs": {
+   "value": 0.25,
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "0.25"
+  }
+ },
+ "36": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "33",
+    0
+   ],
+   "source": [
+    "34",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "multiply"
+  },
+  "_meta": {
+   "title": "L x 0.75"
+  }
+ },
+ "37": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "36",
+    0
+   ],
+   "source": [
+    "35",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "add"
+  },
+  "_meta": {
+   "title": "detail = 0.25 + 0.75 L"
+  }
+ },
+ "38": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "37",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "detail image"
+  }
+ },
+ "39": {
+  "class_type": "EmptyImage",
+  "inputs": {
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ],
+   "batch_size": 1,
+   "color": 15752798
+  },
+  "_meta": {
+   "title": "red multiplier (240, 94, 94)"
+  }
+ },
+ "40": {
+  "class_type": "ImageBlend",
+  "inputs": {
+   "image1": [
+    "38",
+    0
+   ],
+   "image2": [
+    "39",
+    0
+   ],
+   "blend_factor": 1.0,
+   "blend_mode": "multiply"
+  },
+  "_meta": {
+   "title": "character 1: tinted normal map"
+  }
+ },
+ "41": {
+  "class_type": "GrowMask",
+  "inputs": {
+   "mask": [
+    "17",
+    0
+   ],
+   "expand": -2,
+   "tapered_corners": true
+  },
+  "_meta": {
+   "title": "inner edge -2px"
+  }
+ },
+ "42": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "41",
+    0
+   ]
+  }
+ },
+ "43": {
+  "class_type": "ImageBlur",
+  "inputs": {
+   "image": [
+    "42",
+    0
+   ],
+   "blur_radius": 4,
+   "sigma": 2.0
+  },
+  "_meta": {
+   "title": "feather inside the mask"
+  }
+ },
+ "44": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "43",
+    0
+   ],
+   "channel": "red"
+  }
+ },
+ "45": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "44",
+    0
+   ],
+   "source": [
+    "17",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "multiply"
+  },
+  "_meta": {
+   "title": "never outside the mask"
+  }
+ },
+ "46": {
+  "class_type": "ImageCompositeMasked",
+  "inputs": {
+   "destination": [
+    "6",
+    0
+   ],
+   "source": [
+    "40",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "resize_source": false,
+   "mask": [
+    "45",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "character 1: mark inside mask"
+  }
+ },
+ "47": {
+  "class_type": "EmptyImage",
+  "inputs": {
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ],
+   "batch_size": 1,
+   "color": 5935856
+  },
+  "_meta": {
+   "title": "blue multiplier (90, 146, 240)"
+  }
+ },
+ "48": {
+  "class_type": "ImageBlend",
+  "inputs": {
+   "image1": [
+    "38",
+    0
+   ],
+   "image2": [
+    "47",
+    0
+   ],
+   "blend_factor": 1.0,
+   "blend_mode": "multiply"
+  },
+  "_meta": {
+   "title": "character 2: tinted normal map"
+  }
+ },
+ "49": {
+  "class_type": "GrowMask",
+  "inputs": {
+   "mask": [
+    "18",
+    0
+   ],
+   "expand": -2,
+   "tapered_corners": true
+  },
+  "_meta": {
+   "title": "inner edge -2px"
+  }
+ },
+ "50": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "49",
+    0
+   ]
+  }
+ },
+ "51": {
+  "class_type": "ImageBlur",
+  "inputs": {
+   "image": [
+    "50",
+    0
+   ],
+   "blur_radius": 4,
+   "sigma": 2.0
+  },
+  "_meta": {
+   "title": "feather inside the mask"
+  }
+ },
+ "52": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "51",
+    0
+   ],
+   "channel": "red"
+  }
+ },
+ "53": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "52",
+    0
+   ],
+   "source": [
+    "18",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "multiply"
+  },
+  "_meta": {
+   "title": "never outside the mask"
+  }
+ },
+ "54": {
+  "class_type": "ImageCompositeMasked",
+  "inputs": {
+   "destination": [
+    "46",
+    0
+   ],
+   "source": [
+    "48",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "resize_source": false,
+   "mask": [
+    "53",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "character 2: mark inside mask"
+  }
+ },
+ "55": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "17",
+    0
+   ],
+   "source": [
+    "18",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "or"
+  },
+  "_meta": {
+   "title": "all tracked people"
+  }
+ },
+ "56": {
+  "class_type": "UNETLoader",
+  "inputs": {
+   "unet_name": "minimax-h3/MiniMax_H3_Ref2VA_pruned_int8_convrot.safetensors",
+   "weight_dtype": "default"
+  },
+  "_meta": {
+   "title": "H3 Ref2VA (pruned int8)"
+  }
+ },
+ "57": {
+  "class_type": "CLIPLoader",
+  "inputs": {
+   "clip_name": "minimax-h3/qwen3vl_32b_minimax_h3_int8_convrot.safetensors",
+   "type": "minimax",
+   "device": "default"
+  },
+  "_meta": {
+   "title": "Qwen3-VL 32B text encoder"
+  }
+ },
+ "58": {
+  "class_type": "VAELoader",
+  "inputs": {
+   "vae_name": "minimax-h3/minimax_h3_video_vae_fp16.safetensors"
+  },
+  "_meta": {
+   "title": "Video VAE"
+  }
+ },
+ "59": {
+  "class_type": "VAELoader",
+  "inputs": {
+   "vae_name": "minimax-h3/minimax_h3_audio_vae_fp32.safetensors"
+  },
+  "_meta": {
+   "title": "Audio VAE"
+  }
+ },
+ "60": {
+  "class_type": "LoraLoaderModelOnly",
+  "inputs": {
+   "model": [
+    "56",
+    0
+   ],
+   "lora_name": "minimax-h3/minimax_h3_dmd_ref2va_8step_turbo_pruned.safetensors",
+   "strength_model": 1.0
+  },
+  "_meta": {
+   "title": "Speed LoRA (minimax_h3_dmd_ref2va_8step_turbo_pruned.safetensors)"
+  }
+ },
+ "61": {
+  "class_type": "LoraLoaderModelOnly",
+  "inputs": {
+   "model": [
+    "60",
+    0
+   ],
+   "lora_name": "minimax-h3/minimax_h3_character_swap_v1.0_preprocessor_map_fro099.safetensors",
+   "strength_model": 1.0
+  },
+  "_meta": {
+   "title": "Character Swap LoRA (minimax_h3_character_swap_v1.0_preprocessor_map_fro099.safetensors)"
+  }
+ },
+ "62": {
+  "class_type": "MiniMaxH3SigmaShift",
+  "inputs": {
+   "model": [
+    "61",
+    0
+   ],
+   "shift_video": 12.0,
+   "shift_audio": 3.0
+  },
+  "_meta": {
+   "title": "sigma shift (video 12 \u00b7 audio 3)"
+  }
+ },
+ "63": {
+  "class_type": "MiniMaxChunkFeedForward",
+  "inputs": {
+   "model": [
+    "62",
+    0
+   ],
+   "chunks": 8,
+   "seq_threshold": 4096
+  },
+  "_meta": {
+   "title": "low-VRAM: chunk feed-forward"
+  }
+ },
+ "64": {
+  "class_type": "MiniMaxLowVRAMAttention",
+  "inputs": {
+   "model": [
+    "63",
+    0
+   ],
+   "head_chunks": 16
+  },
+  "_meta": {
+   "title": "low-VRAM: head-chunked attention"
+  }
+ },
+ "65": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "character.png"
+  },
+  "_meta": {
+   "title": "\u2461 NEW CHARACTER 1"
+  }
+ },
+ "66": {
+  "class_type": "ImageScaleToTotalPixels",
+  "inputs": {
+   "image": [
+    "65",
+    0
+   ],
+   "upscale_method": "lanczos",
+   "megapixels": 0.5,
+   "resolution_steps": 16
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 1 -> 0.5 MP"
+  }
+ },
+ "67": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "person:1",
+   "clip": [
+    "9",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "detect in NEW CHARACTER 1"
+  }
+ },
+ "68": {
+  "class_type": "SAM3_Detect",
+  "inputs": {
+   "model": [
+    "9",
+    0
+   ],
+   "image": [
+    "66",
+    0
+   ],
+   "threshold": 0.4,
+   "refine_iterations": 2,
+   "individual_masks": false,
+   "conditioning": [
+    "67",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "SAM3: cut-out of NEW CHARACTER 1"
+  }
+ },
+ "69": {
+  "class_type": "GetImageSize",
+  "inputs": {
+   "image": [
+    "66",
+    0
+   ]
+  }
+ },
+ "70": {
+  "class_type": "EmptyImage",
+  "inputs": {
+   "width": [
+    "69",
+    0
+   ],
+   "height": [
+    "69",
+    1
+   ],
+   "batch_size": 1,
+   "color": 8421504
+  },
+  "_meta": {
+   "title": "grey backdrop"
+  }
+ },
+ "71": {
+  "class_type": "InvertMask",
+  "inputs": {
+   "mask": [
+    "68",
+    0
+   ]
+  }
+ },
+ "72": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "68",
+    0
+   ]
+  }
+ },
+ "73": {
+  "class_type": "ImageScale",
+  "inputs": {
+   "image": [
+    "72",
+    0
+   ],
+   "upscale_method": "area",
+   "width": 1,
+   "height": 1,
+   "crop": "disabled"
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 1: share of the picture SAM3 found (1x1 mean)"
+  }
+ },
+ "74": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "73",
+    0
+   ],
+   "channel": "red"
+  }
+ },
+ "75": {
+  "class_type": "ThresholdMask",
+  "inputs": {
+   "mask": [
+    "74",
+    0
+   ],
+   "value": 0.005
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 1: 1 = subject found, 0 = nothing found"
+  }
+ },
+ "76": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "75",
+    0
+   ]
+  }
+ },
+ "77": {
+  "class_type": "ImageScale",
+  "inputs": {
+   "image": [
+    "76",
+    0
+   ],
+   "upscale_method": "nearest-exact",
+   "width": [
+    "69",
+    0
+   ],
+   "height": [
+    "69",
+    1
+   ],
+   "crop": "disabled"
+  }
+ },
+ "78": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "77",
+    0
+   ],
+   "channel": "red"
+  }
+ },
+ "79": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "71",
+    0
+   ],
+   "source": [
+    "78",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "multiply"
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 1: grey backdrop only if the subject was found"
+  }
+ },
+ "80": {
+  "class_type": "ImageCompositeMasked",
+  "inputs": {
+   "destination": [
+    "66",
+    0
+   ],
+   "source": [
+    "70",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "resize_source": false,
+   "mask": [
+    "79",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 1 on grey"
+  }
+ },
+ "81": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "character2.png"
+  },
+  "_meta": {
+   "title": "\u2461 NEW CHARACTER 2"
+  }
+ },
+ "82": {
+  "class_type": "ImageScaleToTotalPixels",
+  "inputs": {
+   "image": [
+    "81",
+    0
+   ],
+   "upscale_method": "lanczos",
+   "megapixels": 0.5,
+   "resolution_steps": 16
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 2 -> 0.5 MP"
+  }
+ },
+ "83": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "person:1",
+   "clip": [
+    "9",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "detect in NEW CHARACTER 2"
+  }
+ },
+ "84": {
+  "class_type": "SAM3_Detect",
+  "inputs": {
+   "model": [
+    "9",
+    0
+   ],
+   "image": [
+    "82",
+    0
+   ],
+   "threshold": 0.4,
+   "refine_iterations": 2,
+   "individual_masks": false,
+   "conditioning": [
+    "83",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "SAM3: cut-out of NEW CHARACTER 2"
+  }
+ },
+ "85": {
+  "class_type": "GetImageSize",
+  "inputs": {
+   "image": [
+    "82",
+    0
+   ]
+  }
+ },
+ "86": {
+  "class_type": "EmptyImage",
+  "inputs": {
+   "width": [
+    "85",
+    0
+   ],
+   "height": [
+    "85",
+    1
+   ],
+   "batch_size": 1,
+   "color": 8421504
+  },
+  "_meta": {
+   "title": "grey backdrop"
+  }
+ },
+ "87": {
+  "class_type": "InvertMask",
+  "inputs": {
+   "mask": [
+    "84",
+    0
+   ]
+  }
+ },
+ "88": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "84",
+    0
+   ]
+  }
+ },
+ "89": {
+  "class_type": "ImageScale",
+  "inputs": {
+   "image": [
+    "88",
+    0
+   ],
+   "upscale_method": "area",
+   "width": 1,
+   "height": 1,
+   "crop": "disabled"
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 2: share of the picture SAM3 found (1x1 mean)"
+  }
+ },
+ "90": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "89",
+    0
+   ],
+   "channel": "red"
+  }
+ },
+ "91": {
+  "class_type": "ThresholdMask",
+  "inputs": {
+   "mask": [
+    "90",
+    0
+   ],
+   "value": 0.005
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 2: 1 = subject found, 0 = nothing found"
+  }
+ },
+ "92": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "91",
+    0
+   ]
+  }
+ },
+ "93": {
+  "class_type": "ImageScale",
+  "inputs": {
+   "image": [
+    "92",
+    0
+   ],
+   "upscale_method": "nearest-exact",
+   "width": [
+    "85",
+    0
+   ],
+   "height": [
+    "85",
+    1
+   ],
+   "crop": "disabled"
+  }
+ },
+ "94": {
+  "class_type": "ImageToMask",
+  "inputs": {
+   "image": [
+    "93",
+    0
+   ],
+   "channel": "red"
+  }
+ },
+ "95": {
+  "class_type": "MaskComposite",
+  "inputs": {
+   "destination": [
+    "87",
+    0
+   ],
+   "source": [
+    "94",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "operation": "multiply"
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 2: grey backdrop only if the subject was found"
+  }
+ },
+ "96": {
+  "class_type": "ImageCompositeMasked",
+  "inputs": {
+   "destination": [
+    "82",
+    0
+   ],
+   "source": [
+    "86",
+    0
+   ],
+   "x": 0,
+   "y": 0,
+   "resize_source": false,
+   "mask": [
+    "95",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "NEW CHARACTER 2 on grey"
+  }
+ },
+ "97": {
+  "class_type": "PrimitiveStringMultiline",
+  "inputs": {
+   "value": "character_swap:\nsubject_definitions:\nThe guide video is the source of the edit. In it, each subject to replace is marked with its surface-normal map colorized in one solid color (its 3D surface, without its real colors); the mark says who changes, not where the new look must end, and everything else in the guide is the real video.\n<Subject 1> is the subject marked by the red normal map in the guide video; its appearance comes from <Picture 1>, its pose and motion from the red mark.\n<Subject 2> is the subject marked by the blue normal map in the guide video; its appearance comes from <Picture 2>, its pose and motion from the blue mark.\nsummary: [video editing + reference generation] The target video is the guide video with the red subject replaced by <Picture 1>, the blue subject replaced by <Picture 2>, from the first frame to the last, following each mark's pose and motion. Every other person, the layout, the backgrounds, the camera and the motion stay exactly as in the guide video. Keep held objects and foreground occluders in their original positions, shapes and colors; they are separate from the subject being replaced.\nretention_analysis:\n<Subject 1>: attribute_transfer - keeps the pose and motion of the red mark and takes the face, hair, body and whole outfit of <Picture 1> in every frame.\n<Subject 2>: attribute_transfer - keeps the pose and motion of the blue mark and takes the face, hair, body and whole outfit of <Picture 2> in every frame.\nEveryone else, held objects, foreground occluders, the layout and the backgrounds: fully_preserved."
+  },
+  "_meta": {
+   "title": "PROMPT ('character_swap:' format)"
+  }
+ },
+ "98": {
+  "class_type": "MiniMaxH3ReferenceToVideo",
+  "inputs": {
+   "clip": [
+    "57",
+    0
+   ],
+   "prompt": [
+    "97",
+    0
+   ],
+   "width": [
+    "7",
+    0
+   ],
+   "height": [
+    "7",
+    1
+   ],
+   "length": 124,
+   "ref_image_size": "match",
+   "vae": [
+    "58",
+    0
+   ],
+   "ref_images.ref_image_0": [
+    "80",
+    0
+   ],
+   "ref_images.ref_image_1": [
+    "96",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "H3 Ref2VA \u00b7 red/blue/green = <Picture 1/2/3>"
+  }
+ },
+ "99": {
+  "class_type": "MiniMaxH3AddGuide",
+  "inputs": {
+   "positive": [
+    "98",
+    0
+   ],
+   "latent": [
+    "98",
+    1
+   ],
+   "frame_idx": 0,
+   "vae": [
+    "58",
+    0
+   ],
+   "image": [
+    "54",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "ADD GUIDE \u00b7 colour-marked guide at frame 0"
+  }
+ },
+ "100": {
+  "class_type": "CFGGuider",
+  "inputs": {
+   "model": [
+    "64",
+    0
+   ],
+   "positive": [
+    "99",
+    0
+   ],
+   "negative": [
+    "99",
+    0
+   ],
+   "cfg": 1.0
+  },
+  "_meta": {
+   "title": "guider (cfg 1, negative = positive)"
+  }
+ },
+ "101": {
+  "class_type": "RandomNoise",
+  "inputs": {
+   "noise_seed": 42
+  }
+ },
+ "102": {
+  "class_type": "KSamplerSelect",
+  "inputs": {
+   "sampler_name": "lcm"
+  }
+ },
+ "103": {
+  "class_type": "BasicScheduler",
+  "inputs": {
+   "model": [
+    "64",
+    0
+   ],
+   "scheduler": "simple",
+   "steps": 8,
+   "denoise": 1.0
+  }
+ },
+ "104": {
+  "class_type": "SamplerCustomAdvanced",
+  "inputs": {
+   "noise": [
+    "101",
+    0
+   ],
+   "guider": [
+    "100",
+    0
+   ],
+   "sampler": [
+    "102",
+    0
+   ],
+   "sigmas": [
+    "103",
+    0
+   ],
+   "latent_image": [
+    "98",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "sample (8 steps \u00b7 lcm)"
+  }
+ },
+ "105": {
+  "class_type": "LTXVSeparateAVLatent",
+  "inputs": {
+   "av_latent": [
+    "104",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "split video / audio latent"
+  }
+ },
+ "106": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "105",
+    0
+   ],
+   "vae": [
+    "58",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "decode"
+  }
+ },
+ "107": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "106",
+    0
+   ],
+   "batch_index": 0,
+   "length": 124
+  },
+  "_meta": {
+   "title": "exact length (raw render)"
+  }
+ },
+ "108": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "107",
+    0
+   ],
+   "batch_index": 0,
+   "length": 120
+  },
+  "_meta": {
+   "title": "result = exactly 120 frames (= source length)"
+  }
+ },
+ "109": {
+  "class_type": "VHS_VideoCombine",
+  "inputs": {
+   "images": [
+    "108",
+    0
+   ],
+   "frame_rate": 24,
+   "loop_count": 0,
+   "filename_prefix": "H3Studio/swap",
+   "format": "video/h264-mp4",
+   "pingpong": false,
+   "save_output": true,
+   "audio": [
+    "8",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "\u2605 H3 RESULT (mp4)"
+  }
+ },
+ "110": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "80",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "check: reference <Picture 1> (red)"
+  }
+ },
+ "111": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "96",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "check: reference <Picture 2> (blue)"
+  }
+ },
+ "112": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "107",
+    0
+   ],
+   "batch_index": 0,
+   "length": 1
+  }
+ },
+ "113": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "107",
+    0
+   ],
+   "batch_index": 29,
+   "length": 1
+  }
+ },
+ "114": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "112",
+    0
+   ],
+   "image2": [
+    "113",
+    0
+   ]
+  }
+ },
+ "115": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "107",
+    0
+   ],
+   "batch_index": 59,
+   "length": 1
+  }
+ },
+ "116": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "114",
+    0
+   ],
+   "image2": [
+    "115",
+    0
+   ]
+  }
+ },
+ "117": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "107",
+    0
+   ],
+   "batch_index": 89,
+   "length": 1
+  }
+ },
+ "118": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "116",
+    0
+   ],
+   "image2": [
+    "117",
+    0
+   ]
+  }
+ },
+ "119": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "107",
+    0
+   ],
+   "batch_index": 119,
+   "length": 1
+  }
+ },
+ "120": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "118",
+    0
+   ],
+   "image2": [
+    "119",
+    0
+   ]
+  }
+ },
+ "121": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "120",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "check: RAW H3 render over the WHOLE clip (first..last)"
+  }
+ },
+ "122": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "54",
+    0
+   ],
+   "batch_index": 0,
+   "length": 4
+  }
+ },
+ "123": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "122",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "check: marked guide (first frames)"
+  }
+ },
+ "124": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "54",
+    0
+   ],
+   "batch_index": 0,
+   "length": 1
+  }
+ },
+ "125": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "54",
+    0
+   ],
+   "batch_index": 29,
+   "length": 1
+  }
+ },
+ "126": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "124",
+    0
+   ],
+   "image2": [
+    "125",
+    0
+   ]
+  }
+ },
+ "127": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "54",
+    0
+   ],
+   "batch_index": 59,
+   "length": 1
+  }
+ },
+ "128": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "126",
+    0
+   ],
+   "image2": [
+    "127",
+    0
+   ]
+  }
+ },
+ "129": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "54",
+    0
+   ],
+   "batch_index": 89,
+   "length": 1
+  }
+ },
+ "130": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "128",
+    0
+   ],
+   "image2": [
+    "129",
+    0
+   ]
+  }
+ },
+ "131": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "54",
+    0
+   ],
+   "batch_index": 119,
+   "length": 1
+  }
+ },
+ "132": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "130",
+    0
+   ],
+   "image2": [
+    "131",
+    0
+   ]
+  }
+ },
+ "133": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "132",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "check: marked GUIDE over the WHOLE clip (first..last)"
+  }
+ },
+ "134": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "55",
+    0
+   ]
+  }
+ },
+ "135": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "134",
+    0
+   ],
+   "batch_index": 0,
+   "length": 1
+  }
+ },
+ "136": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "134",
+    0
+   ],
+   "batch_index": 29,
+   "length": 1
+  }
+ },
+ "137": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "135",
+    0
+   ],
+   "image2": [
+    "136",
+    0
+   ]
+  }
+ },
+ "138": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "134",
+    0
+   ],
+   "batch_index": 59,
+   "length": 1
+  }
+ },
+ "139": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "137",
+    0
+   ],
+   "image2": [
+    "138",
+    0
+   ]
+  }
+ },
+ "140": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "134",
+    0
+   ],
+   "batch_index": 89,
+   "length": 1
+  }
+ },
+ "141": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "139",
+    0
+   ],
+   "image2": [
+    "140",
+    0
+   ]
+  }
+ },
+ "142": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "134",
+    0
+   ],
+   "batch_index": 119,
+   "length": 1
+  }
+ },
+ "143": {
+  "class_type": "ImageBatch",
+  "inputs": {
+   "image1": [
+    "141",
+    0
+   ],
+   "image2": [
+    "142",
+    0
+   ]
+  }
+ },
+ "144": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "143",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "check: replace area over the WHOLE clip (first..last)"
+  }
+ },
+ "145": {
+  "class_type": "SAM3_TrackPreview",
+  "inputs": {
+   "track_data": [
+    "16",
+    0
+   ],
+   "opacity": 0.5,
+   "fps": 24.0
+  },
+  "_meta": {
+   "title": "check: tracked people"
+  }
+ },
+ "146": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "17",
+    0
+   ]
+  }
+ },
+ "147": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "146",
+    0
+   ],
+   "batch_index": 119,
+   "length": 1
+  }
+ },
+ "148": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "147",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "handoff mask 0"
+  }
+ },
+ "149": {
+  "class_type": "MaskToImage",
+  "inputs": {
+   "mask": [
+    "18",
+    0
+   ]
+  }
+ },
+ "150": {
+  "class_type": "ImageFromBatch",
+  "inputs": {
+   "image": [
+    "149",
+    0
+   ],
+   "batch_index": 119,
+   "length": 1
+  }
+ },
+ "151": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "150",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "handoff mask 1"
+  }
+ }
+}

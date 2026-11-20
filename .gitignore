@@ -2,3 +2,12 @@ __pycache__/
 *.pyc
 h3studio/uploads/
 h3studio/jobs.json
+# rendered videos, verify thumbnails and temp cuts (large, personal)
+h3studio/outputs/
+# runtime state written by the H3 Studio server
+h3studio/.gpu_hold
+h3studio/describe_cache.json
+h3studio/probe_cache.json
+h3studio/eta_stats.json
+# local Claude Code permissions
+.claude/settings.local.json
